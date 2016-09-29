@@ -11,6 +11,8 @@ addpath('../Static Assignment','../Main Library')
 %This is similar to the network used in the textbook of Cascetta on p.442
 load toy_cascetta.mat
 
+load leuven.mat
+
 %plot the network
 plotNetwork(nodes,links,true,[]);
 

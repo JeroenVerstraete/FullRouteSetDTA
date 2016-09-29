@@ -1,4 +1,5 @@
 function [destinationFlows] = MSArl(ODmatrix,nodes,links,mu,travelCostsInit,destinationFlowsInit)
+%Run main
 %Method of successive averages for calculating stochastic user
 %equilibrium using Dial's method
 %
