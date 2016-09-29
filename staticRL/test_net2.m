@@ -33,17 +33,10 @@ b = eye(size(con,1));
 %solve system of equations
 z = linsolve((eye(length(b))-M),b);
 
-z = linsolve((eye(length(b))-M),eye(length(b)));
-
 %probabilities
 P = zeros(size(con));
 for i=1:length(b)-1
 	P(i,:)=M(i,:).*z'/(M(i,:)*z);
-end
-
-P = zeros(size(con));
-for i=1:length(b)-1
-	P(i,:)=M(i,:).*z(:,i)'/(M(i,:)*z(:,i));
 end
 
 P(1,:)=1;

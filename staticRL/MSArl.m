@@ -34,7 +34,6 @@ maxIt = 2000; %Computation criterion
 totLinks = size(links,1);
 
 
-
 %rows and columns are links
 connectionMatrix = zeros(totLinks,totLinks);
 for l=1:totLinks
@@ -58,7 +57,7 @@ beta = 4;
 
 
 if isempty(travelCostsInit)
-    travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2),[links.length]',[links.freeSpeed]',[links.capacity]');
+    travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');
 else
     travelCosts = travelCostsInit;
 end
