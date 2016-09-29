@@ -80,7 +80,7 @@ while it < maxIt && gap>10^-3
     destinationFlows = destinationFlows + (1/(it^(2/3)))*update;%
 
     %convergence gap
-    travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2),[links.length]',[links.freeSpeed]',[links.capacity]');
+    travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');
     gap = sum(sum(abs(update)));
     %gap = reducedCostGap(originFlows,travelCosts,links,nodes);
      

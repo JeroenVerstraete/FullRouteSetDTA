@@ -46,14 +46,21 @@ b = [LDb;DDb;ODb];
 z = (eye(length(b)) -M)\b;
 
 %% probability en flow (bestemming afh)
+destinationFlows=zeros(numL+numD+numO,4);
+for des=1:numD
 
-P = zeros(numL+numD+numO,numL+numD+numO);
-for i=1:length(b)-1
-	P(i,:)=M(i,:).*z(:,1)'/(M(i,:)*z(:,1));
+    P = zeros(numL+numD+numO,numL+numD+numO);
+    for i=1:length(b)
+        P(i,:)=M(i,:).*z(:,des)'/(M(i,:)*z(:,des));
+    end
+
+    P(isnan(P))=0;
+
+    G=zeros(numL+numD+numO,1);
+    G(numL+numD+1:numL+numD+numO)=ODmatrix(:,des);
+
+    %link flows
+    F = linsolve((eye(length(G))-P.'),G);
+    destinationFlows(:,des)=F;
 end
-
-G=zeros(numL+numD+numO,numL+numD+numO);
-
-%link flows
-F = linsolve((eye(length(G))-P.'),G);
-
+destinationFlows=destinationFlows(1:numL,:);
