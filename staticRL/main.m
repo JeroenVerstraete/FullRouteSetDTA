@@ -27,7 +27,7 @@ beta = 4;
 %% Compute a deterministic MSA assignment
 %calculate flow (and plot the covergence)
 tic
-flows = MSArl(odmatrix,nodes,links,mu,[],[]);
+flows = MSArl(odmatrix,links,mu,[],[]);
 toc
 
 %visualize the result
