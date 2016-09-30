@@ -30,9 +30,13 @@ numL = size(links,1);
 
 
 %rows and columns are links, init connectionmatrix
+%1 if connection is possible
+%p when it is a U-turn
+p=10^1;
 connectionMatrix = zeros(numL,numL);
 for l=1:numL
-    connectionMatrix(l,[links.fromNode]==links.toNode(l))=1;
+    connectionMatrix(l,[links.fromNode]==links.toNode(l))=1; %check if connection is possible
+    connectionMatrix(l,([links.fromNode]==links.toNode(l)).*[links.toNode]==links.fromNode(l))=p; %check if u-turn
 end
 
 it = 0; %iteration number;
