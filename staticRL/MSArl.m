@@ -61,6 +61,8 @@ else
     travelCosts = travelCostsInit;
 end
 
+ODmatrix(logical(eye(size(ODmatrix)))) = 0; % diagonaal ODmatrix =0
+
 %% init M en b
 LL = zeros(numL,numL);
 
@@ -68,11 +70,11 @@ LL = zeros(numL,numL);
 DL = zeros(numD,numL);
 OL = zeros(numO,numL);
 for l=1:numO
-    OL(l,l==links.fromNode)=1; % elk node is een O/D
+    OL(l,l==links.fromNode)=1; % eerste numO links zijn de Origins
 end
 LD = zeros(numL,numD);
 for l=1:numD
-    LD(l==links.toNode,l)=1; % elk node is een O/D
+    LD(l==links.toNode,l)=1; % eerste numD links zijn de Destinations
 end
 DD = zeros(numD,numD);
 OD = zeros(numO,numD); %heeft geen betekenis op het netwerk
