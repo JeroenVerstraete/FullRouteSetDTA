@@ -9,9 +9,10 @@ addpath('../Static Assignment','../Main Library')
 
 %% Loading a simple network
 %This is similar to the network used in the textbook of Cascetta on p.442
-load toy_cascetta.mat
+% load toy_cascetta.mat
 
-%load leuven.mat
+% load leuven.mat
+load gent.mat
 
 %plot the network
 plotNetwork(nodes,links,true,[]);
@@ -27,7 +28,7 @@ beta = 4;
 %% Compute a deterministic MSA assignment
 %calculate flow (and plot the covergence)
 tic
-flows = MSArl(odmatrix,nodes,links,mu,[],[]);
+flows = MSArl(odmatrix,links,mu,[],[]);
 toc
 
 %visualize the result
