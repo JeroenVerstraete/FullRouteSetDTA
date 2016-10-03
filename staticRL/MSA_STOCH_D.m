@@ -74,6 +74,7 @@ else
 end
 
 %Return the total flow for every linnk (sum over all origines)
-flows = sum(originFlows,2);
+% flows = sum(originFlows,2);
+flows=originFlows;
 
 end

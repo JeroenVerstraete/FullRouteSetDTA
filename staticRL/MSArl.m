@@ -120,6 +120,7 @@ while it < maxIt && gap>10^-3
      
     %plot convergence
     figure(1001) 
+    semilogy(0,NaN);
     hold on
     plot(cputime-start_time,log10(gap),'.','MarkerEdgeColor',c,'MarkerFaceColor',c,'MarkerSize',10);
     %plot(it,log10(gap),'.','MarkerEdgeColor',c,'MarkerFaceColor',c,'MarkerSize',10);

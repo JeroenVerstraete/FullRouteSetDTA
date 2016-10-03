@@ -26,7 +26,10 @@ alpha = 0.15;
 beta = 4;
 
 %% Compute a deterministic MSA assignment
-%calculate flow (and plot the covergence)
+%calculate flow
+% flowsrl is destination oriented, flowsD is origin oriented!
+
+
 tic
 flowsrl = MSArl(odmatrix,links,mu,[],[]);
 toc
@@ -35,12 +38,11 @@ tic
 flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu);
 toc
 
-% tic
-% flowss = MSA_STOCH_S(odmatrix,nodes,links,mu);
-% toc
+flowsVerschil = sum(flowsrl,2)-sum(flowsD,2);
 
 %visualize the result
-% plotLoadedLinks(nodes,links,sum(flows,2),true,[],[],[],'Flows');
-% plotLoadedLinks(nodes,links,flows(:,1),true,[],[],[],'Flows naar node 1');
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
+plotLoadedLinks(nodes,links,sum(flowsD,2),true,[],[],[],'Flows Dial');
+plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],[],[],'Flows RL-Dial');
 % travel_costs = calculateCostBPR(alpha,beta,sum(flows,2),links.length,links.freeSpeed,links.capacity);
 % plotLoadedLinks(nodes,links,travel_costs,true,[],[],[],'Travel costs');
