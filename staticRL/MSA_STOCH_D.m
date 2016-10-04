@@ -42,7 +42,6 @@ gap = inf;
 
 %MAIN LOOP: iterate until convergence is reached or maximum number of
 %iterations is reached
-while it < maxIt && gap > 10^-3 
     it = it+1;
     
     %Compute new flows via the implicit routing scheme of Dail (1971) 
@@ -70,7 +69,7 @@ end
 if it >= maxIt 
     disp(['Maximum Iteration limit reached: ', num2str(maxIt)]);
 else
-    disp(['Convergenced reache in iteration ', num2str(it)]);
+    disp(['Converged in iteration ', num2str(it)]);
 end
 
 %Return the total flow for every linnk (sum over all origines)
