@@ -36,9 +36,10 @@ numL = size(links,1);
 %p when it is a U-turn
 p=10^1;
 connectionMatrix = zeros(numL,numL);
+Uturn = zeros(numL,numL);
 for l=1:numL
     connectionMatrix(l,[links.fromNode]==links.toNode(l))=1; %check if connection is possible
-    connectionMatrix(l,([links.fromNode]==links.toNode(l)).*[links.toNode]==links.fromNode(l))=p; %check if u-turn
+    UTurn(l,[links.fromNode]==links.toNode(l)&[links.toNode]==links.fromNode(l))=1; %check if u-turn
 end
 
 it = 0; %iteration number;
@@ -107,13 +108,13 @@ while it < maxIt && gap>10^-3
     %on that link
     %Compute new flows via Recursive Logit
         
-    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,M,b);
+    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,M,b);
 
     %calculate the update step
     update = (newDestinationFlows - destinationFlows);
     
     %calculate new flows
-    destinationFlows = destinationFlows + (1/(it^(2/3)))*update;%
+    destinationFlows = destinationFlows + 0.5*update;%(1/(it^(2/3)))
 
     %convergence gap
     travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');
