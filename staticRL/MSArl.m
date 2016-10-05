@@ -21,6 +21,8 @@ function [destinationFlows] = MSArl(ODmatrix,links,mu,travelCostsInit,destinatio
 %   Init parameters are for a warm start
 
 %% Init
+h = figure;
+semilogy(0,NaN);
 start_time = cputime;
 maxIt = 2000; %Computation criterion
 
@@ -119,19 +121,21 @@ while it < maxIt && gap>10^-3
     %gap = reducedCostGap(originFlows,travelCosts,links,nodes);
      
     %plot convergence
-    figure(1001) 
+    figure(h)
     hold on
-    plot(cputime-start_time,log10(gap),'.','MarkerEdgeColor',c,'MarkerFaceColor',c,'MarkerSize',10);
+    semilogy(cputime-start_time,gap,'r.')
+%     plot(cputime-start_time,log10(gap),'.','MarkerEdgeColor',c,'MarkerFaceColor',c,'MarkerSize',10);
     %plot(it,log10(gap),'.','MarkerEdgeColor',c,'MarkerFaceColor',c,'MarkerSize',10);
 end
 
 %% display
+hold off
 
 display(['it: ',num2str(it)]);
 display(['gap (veh/h): ', num2str(gap)]);
 display(['max update flow (veh/h): ',num2str(max(max(abs(update))))]);
 display(['relative gap: ',num2str(gap/sum(sum(ODmatrix)))]);
-display(['total Time ALG Recursive Logit ',num2str(cputime-start_time), 's']);
+% display(['total Time ALG Recursive Logit ',num2str(cputime-start_time), 's']);
 
 %Check for number of iteration
 if it >= maxIt 

@@ -34,6 +34,7 @@ tic
 flowsrl = MSArl(odmatrix,links,mu,[],[]);
 toc
 
+hold f
 tic
 flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu);
 toc
