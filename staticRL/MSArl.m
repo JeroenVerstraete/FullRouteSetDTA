@@ -33,20 +33,26 @@ numL = size(links,1);
 
 %rows and columns are links, init connectionmatrix
 %1 if connection is possible
-%p when it is a U-turn
-p=10^1;
 connectionMatrix = zeros(numL,numL);
-Uturn = zeros(numL,numL);
+UTurn = zeros(numL,numL);
 for l=1:numL
     connectionMatrix(l,[links.fromNode]==links.toNode(l))=1; %check if connection is possible
     UTurn(l,[links.fromNode]==links.toNode(l)&[links.toNode]==links.fromNode(l))=1; %check if u-turn
 end
 
+if isempty((find(strcmp(links.Properties.VariableNames, 'level'))))
+    %level1 is laagste level. snelweg heeft de hoogste level
+    links=hierarchy(links);
+end
+levelsDown = zeros(numL,numL);
+[linksFrom,linksTo]=find(connectionMatrix);
+goingDown=links.level(linksFrom)>links.level(linksTo);
+verschil=links.level(linksFrom)-links.level(linksTo);
+levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=verschil(goingDown); %linksFrom is rijnr, linksTo kolomnr => juiste element aanpassen
+% levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=1;
+
 it = 0; %iteration number;
 gap = inf;
-
-cm=hsv(64);
-c=cm(ceil(rand*63),:);
 
 %warm or cold start
 if isempty(destinationFlowsInit)
@@ -108,7 +114,7 @@ while it < maxIt && gap>10^-3
     %on that link
     %Compute new flows via Recursive Logit
         
-    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,M,b);
+    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b);
 
     %calculate the update step
     update = (newDestinationFlows - destinationFlows);

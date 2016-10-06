@@ -1,13 +1,14 @@
-function [destinationFlows] = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,M,b)
+function [destinationFlows] = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b)
 numD = size(ODmatrix,2);
 numO = size(ODmatrix,1);
 numL = size(links,1);
 
 %% Voorbereiding bepalen M
 beta_tt = -1.5;
-beta_Ut = -10;
+beta_Ut = -100;
+beta_hierarchy = -5;
 TT=connectionMatrix.*repmat(travelCosts,size(connectionMatrix,1),1);
-v = beta_tt*TT+beta_Ut*UTurn;
+v = beta_tt*TT+beta_Ut*UTurn+beta_hierarchy*levelsDown;
 
 
 %% Bepalen M
