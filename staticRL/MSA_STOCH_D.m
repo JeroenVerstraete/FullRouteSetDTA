@@ -64,6 +64,7 @@ while it < maxIt && gap > 10^-3
     figure(h) 
     hold on
     semilogy(cputime-start_time,gap,'r.')
+    drawnow
 end
 
 %Check for number of iterations until convergence

@@ -31,7 +31,7 @@ beta = 4;
 
 
 tic
-flowsrl = MSArl(odmatrix,links,mu,[],[]);
+flowsrl = rlEq(odmatrix,links,mu,[],[]);
 toc
 
 tic

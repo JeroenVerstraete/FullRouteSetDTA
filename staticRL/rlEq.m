@@ -1,6 +1,7 @@
-function [destinationFlows] = MSArl(ODmatrix,links,mu,travelCostsInit,destinationFlowsInit)
-%Run main
-%Method of successive averages for calculating stochastic user
+function [destinationFlows] = rlEq(ODmatrix,links,mu,travelCostsInit,destinationFlowsInit)
+%Run main to execute this.
+%
+%Method of proportions for calculating stochastic user
 %equilibrium using Recursive Logit
 %
 %SYNTAX
@@ -8,7 +9,7 @@ function [destinationFlows] = MSArl(ODmatrix,links,mu,travelCostsInit,destinatio
 %
 %DESCRIPTION
 %   returns the flow on each link in the stochastic user equilibrium as
-%   calculated by the method of successive averages combined with RL
+%   calculated by the method of proportions combined with RL
 %   network loading.
 %
 %INPUTS
@@ -20,7 +21,7 @@ function [destinationFlows] = MSArl(ODmatrix,links,mu,travelCostsInit,destinatio
 %   the logit model
 %   Init parameters are for a warm start
 
-%% Init
+%% Init variables
 h = figure;
 semilogy(0,NaN);
 start_time = cputime;
@@ -30,9 +31,22 @@ numD = size(ODmatrix,2);
 numO = size(ODmatrix,1);
 numL = size(links,1);
 
+%iteration number
+it = 0; 
+gap = inf;
+
+%variables for travelCost calculation
+alpha = 0.15;
+beta = 4;
+
+% diagonal ODmatrix =0
+ODmatrix(logical(eye(size(ODmatrix)))) = 0; 
+
+%% Init connectionmatrix/penalties
 
 %rows and columns are links, init connectionmatrix
 %1 if connection is possible
+%UTurn is 1 if the connection is a Uturn
 connectionMatrix = zeros(numL,numL);
 UTurn = zeros(numL,numL);
 for l=1:numL
@@ -40,10 +54,13 @@ for l=1:numL
     UTurn(l,[links.fromNode]==links.toNode(l)&[links.toNode]==links.fromNode(l))=1; %check if u-turn
 end
 
+%check if hierarchy is present
 if isempty((find(strcmp(links.Properties.VariableNames, 'level'))))
     %level1 is laagste level. snelweg heeft de hoogste level
     links=hierarchy(links);
 end
+
+%calculate number of levels it goes down in the hierarchy
 levelsDown = zeros(numL,numL);
 [linksFrom,linksTo]=find(connectionMatrix);
 goingDown=links.level(linksFrom)>links.level(linksTo);
@@ -51,8 +68,7 @@ verschil=links.level(linksFrom)-links.level(linksTo);
 levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=verschil(goingDown); %linksFrom is rijnr, linksTo kolomnr => juiste element aanpassen
 % levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=1;
 
-it = 0; %iteration number;
-gap = inf;
+%% Init warm/cold start
 
 %warm or cold start
 if isempty(destinationFlowsInit)
@@ -61,16 +77,12 @@ else
     destinationFlows=destinationFlowsInit;
 end
 
-
-alpha = 0.15;
-beta = 4;
+%init travelCosts
 if isempty(travelCostsInit)
     travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');
 else
     travelCosts = travelCostsInit;
 end
-
-ODmatrix(logical(eye(size(ODmatrix)))) = 0; % diagonaal ODmatrix =0
 
 %% init M en b
 LL = zeros(numL,numL);
@@ -104,45 +116,37 @@ ODb = zeros(numO,numD);
 b = [LDb;ODb;DDb];
 b=sparse(b);
 
-%% loop
-
+%% Loop
 while it < maxIt && gap>10^-3
     it = it+1;
         
-    %Update costs
-    %note that the total flow on a link is the sum of the origin based flow
-    %on that link
-    %Compute new flows via Recursive Logit
-        
+    %Compute new flows via Recursive Logit  
     newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b);
 
-    %calculate the update step
+    %Calculate the update step
     update = (newDestinationFlows - destinationFlows);
     
-    %calculate new flows
+    %Calculate new flows
     destinationFlows = destinationFlows + 0.5*update;%(1/(it^(2/3)))
 
-    %convergence gap
+    %Convergence gap
     travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');
     gap = sum(sum(abs(update)));
-    %gap = reducedCostGap(originFlows,travelCosts,links,nodes);
      
-    %plot convergence
+    %Plot convergence
     figure(h)
     hold on
     semilogy(cputime-start_time,gap,'r.')
-%     plot(cputime-start_time,log10(gap),'.','MarkerEdgeColor',c,'MarkerFaceColor',c,'MarkerSize',10);
-    %plot(it,log10(gap),'.','MarkerEdgeColor',c,'MarkerFaceColor',c,'MarkerSize',10);
+    drawnow;
 end
 
-%% display
+%% Display
 hold off
 
 display(['it: ',num2str(it)]);
 display(['gap (veh/h): ', num2str(gap)]);
 display(['max update flow (veh/h): ',num2str(max(max(abs(update))))]);
 display(['relative gap: ',num2str(gap/sum(sum(ODmatrix)))]);
-% display(['total Time ALG Recursive Logit ',num2str(cputime-start_time), 's']);
 
 %Check for number of iteration
 if it >= maxIt 
