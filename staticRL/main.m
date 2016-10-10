@@ -25,10 +25,10 @@ mu=1;
 alpha = 0.15;
 beta = 4;
 
-%% Compute a deterministic MSA assignment
+%% Compute the Recursive Logit equilibrium
 %calculate flow (and plot the covergence)
 tic
-flows = MSArl(odmatrix,links,mu,[],[]);
+flows = rlEq(odmatrix,links,mu,[],[]);
 toc
 
 %visualize the result
