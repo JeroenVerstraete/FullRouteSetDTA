@@ -1,15 +1,22 @@
-function [destinationFlows] = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b)
+function [destinationFlows] = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b,betas)
 % Gives the destinationflows according to the Recursive Logit
+
 %% Init variables
 numD = size(ODmatrix,2);    %number of Destinations
 numO = size(ODmatrix,1);    %number of Origins
 numL = size(links,1);       %number of Links
 
 %% Calculate v
-beta_tt = -1.5;             %TravelTimes
-beta_Ut = -100;             %Uturn
-beta_hierarchy = -5;        %hierarchy
-
+if size(betas)~=3 
+    beta_tt = -1.5;             %TravelTimes
+    beta_Ut = -100;             %Uturn
+    beta_hierarchy = -1;        %hierarchy
+else
+    beta_tt = betas(1);             %TravelTimes
+    beta_Ut = betas(2);             %Uturn
+    beta_hierarchy = betas(3);      %hierarchy
+end
+    
 TT=connectionMatrix.*repmat(travelCosts,size(connectionMatrix,1),1);
 v = beta_tt*TT+beta_Ut*UTurn+beta_hierarchy*levelsDown;
 

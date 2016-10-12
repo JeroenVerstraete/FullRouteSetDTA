@@ -4,20 +4,20 @@ clc
 close all
 
 %% First add these folders to the search path
-javaclasspath('../Static Assignment');
-addpath('../Static Assignment','../Main Library')
+% javaclasspath('../Static Assignment');
+% addpath('../Static Assignment','../Main Library')
 
 %% Loading a simple network
 %This is similar to the network used in the textbook of Cascetta on p.442
 % load toy_cascetta.mat
 
-% load leuven.mat
-load gent.mat
+load leuven.mat
+% load gent.mat
 
 %plot the network
-plotNetwork(nodes,links,true,[]);
-plotLoadedLinks(nodes,links,links.length,true,[],[],[],'links.length');
-plotLoadedLinks(nodes,links,links.capacity,true,[],[],[],'links.capacity');
+% plotNetwork(nodes,links,true,[]);
+% plotLoadedLinks(nodes,links,links.length,true,[],[],[],'links.length');
+% plotLoadedLinks(nodes,links,links.capacity,true,[],[],[],'links.capacity');
 
 %% Initializing
 %Initialize parameters
@@ -28,7 +28,7 @@ beta = 4;
 %% Compute the Recursive Logit equilibrium
 %calculate flow (and plot the covergence)
 tic
-flows = rlEq(odmatrix,links,mu,[],[]);
+flows = rlEq(odmatrix,links,mu,[],[],[]);
 toc
 
 %visualize the result

@@ -42,6 +42,7 @@ gap = inf;
 
 %MAIN LOOP: iterate until convergence is reached or maximum number of
 %iterations is reached
+tic
 while it < maxIt && gap > 10^-3
     it = it+1;
     
@@ -66,7 +67,7 @@ while it < maxIt && gap > 10^-3
     semilogy(cputime-start_time,gap,'r.')
     drawnow
 end
-
+toc
 %Check for number of iterations until convergence
 if it >= maxIt 
     disp(['Maximum Iteration limit reached: ', num2str(maxIt)]);

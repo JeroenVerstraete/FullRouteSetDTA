@@ -1,4 +1,4 @@
-function [destinationFlows] = rlEq(ODmatrix,links,mu,travelCostsInit,destinationFlowsInit)
+function [destinationFlows] = rlEq(ODmatrix,links,mu,travelCostsInit,destinationFlowsInit,betas,BoolFigure)
 %Run main to execute this.
 %
 %Method of proportions for calculating stochastic user
@@ -22,8 +22,10 @@ function [destinationFlows] = rlEq(ODmatrix,links,mu,travelCostsInit,destination
 %   Init parameters are for a warm start
 
 %% Init variables
-h = figure;
-semilogy(0,NaN);
+if(BoolFigure)
+    h = figure;
+    semilogy(0,NaN);
+end
 start_time = cputime;
 maxIt = 2000; %Computation criterion
 
@@ -65,8 +67,8 @@ levelsDown = zeros(numL,numL);
 [linksFrom,linksTo]=find(connectionMatrix);
 goingDown=links.level(linksFrom)>links.level(linksTo);
 verschil=links.level(linksFrom)-links.level(linksTo);
-levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=verschil(goingDown); %linksFrom is rijnr, linksTo kolomnr => juiste element aanpassen
-% levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=1;
+% levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=verschil(goingDown); %linksFrom is rijnr, linksTo kolomnr => juiste element aanpassen
+levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=1;
 
 %% Init warm/cold start
 
@@ -117,11 +119,12 @@ b = [LDb;ODb;DDb];
 b=sparse(b);
 
 %% Loop
+tic
 while it < maxIt && gap>10^-3
     it = it+1;
         
     %Compute new flows via Recursive Logit  
-    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b);
+    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b,betas);
 
     %Calculate the update step
     update = (newDestinationFlows - destinationFlows);
@@ -134,12 +137,14 @@ while it < maxIt && gap>10^-3
     gap = sum(sum(abs(update)));
      
     %Plot convergence
-    figure(h)
-    hold on
-    semilogy(cputime-start_time,gap,'r.')
-    drawnow;
+    if(BoolFigure)
+        figure(h)
+        hold on
+        semilogy(cputime-start_time,gap,'r.')
+        drawnow;
+    end
 end
-
+toc
 %% Display
 hold off
 

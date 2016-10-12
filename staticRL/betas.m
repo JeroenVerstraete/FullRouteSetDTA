@@ -23,7 +23,7 @@ load gent.mat
 % plotLoadedLinks(nodes,links,links.capacity,true,[],[],[],'links.capacity');
 
 %% Initializing
-%Initialize parameters
+%Initialize parameters travelcost
 mu=1;
 alpha = 0.15;
 beta = 4;
@@ -34,9 +34,29 @@ beta = 4;
 
 
 flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu);
-flowsrl = rlEq(odmatrix,links,mu,[],[],[]);
-flowsVerschil = sum(flowsrl,2)-sum(flowsD,2);
-absVerschil=sumabs(flowsVerschil);
+h = figure;
+axis([-3 1 0 inf])
+
+betas=[-1.5,-100,-1];
+
+bmin=0;
+verschilmin=inf;
+for b = 0:-0.01:-2
+    betas(3)=b;
+    flowsrl = rlEq(odmatrix,links,mu,[],[],betas,false);
+    flowsVerschil = sum(flowsrl,2)-sum(flowsD,2);
+    absVerschil=sumabs(flowsVerschil);
+    figure(h)
+    hold on
+    plot(b,absVerschil,'r.')
+    drawnow;
+    if(absVerschil<verschilmin)
+        bmin=b;
+        verschilmin=absVerschil;
+    end
+end
+
+%result: bmin=-1.17
 
 %visualize the result
 plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
