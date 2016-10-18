@@ -66,7 +66,7 @@ end
 levelsDown = zeros(numL,numL);
 [linksFrom,linksTo]=find(connectionMatrix);
 goingDown=links.level(linksFrom)>links.level(linksTo);
-verschil=links.level(linksFrom)-links.level(linksTo);
+% verschil=links.level(linksFrom)-links.level(linksTo);
 % levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=verschil(goingDown); %linksFrom is rijnr, linksTo kolomnr => juiste element aanpassen
 levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=1;
 
@@ -134,6 +134,7 @@ while it < maxIt && gap>10^-3
 
     %Convergence gap
     travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');
+    %calculateCostBPR(alpha,beta,sum(destinationFlows,2),links.length,links.freeSpeed,links.capacity)
     gap = sum(sum(abs(update)));
      
     %Plot convergence

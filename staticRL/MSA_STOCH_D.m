@@ -21,11 +21,12 @@ semilogy(0,NaN);
 start_time = cputime;
 
 %Maximum number of iterations
-maxIt = 100000; 
+maxIt = 500; 
 
 %initilization
 totLinks = size(links.toNode,1);
 originFlows=zeros(totLinks,size(odmatrix,1));
+nrOD= nnz(odmatrix);
 
 %Initialize the iteration numbering
 it = 0; 
@@ -48,6 +49,8 @@ while it < maxIt && gap > 10^-3
     
     %Compute new flows via the implicit routing scheme of Dail (1971) 
     newOriginFlows = Dial(odmatrix,nodes,links,travelCosts,theta);
+    tmp=newOriginFlows;
+    tmp(tmp<0.01)=0;
     
     %calculate the update step
     update = (newOriginFlows - originFlows);
@@ -60,11 +63,18 @@ while it < maxIt && gap > 10^-3
     
     %convergence gap
     gap = sum(sum(abs(update)));
+    
         
     %plot convergence
     figure(h) 
     hold on
-    semilogy(cputime-start_time,gap,'r.')
+    if(nrOD==1 && nnz(tmp)==1)
+        semilogy(cputime-start_time,gap,'ro')
+    else
+        semilogy(cputime-start_time,gap,'r.')
+    end
+        
+    
     drawnow
 end
 toc

@@ -61,6 +61,7 @@ if isempty(scale)
     scale = 1/max(load)*0.25*sqrt((max(x)-min(x))^2+(max(y)-min(y))^2)/length(upX)^(1/2);
 end
 
+
 vx=downX-upX;
 vy=downY-upY;
 vl=sqrt(vx.^2+vy.^2);
@@ -90,7 +91,7 @@ crec(load<0,1)=1;
 caxis([minc maxc]);
 
 %visualize all loads
-handle_rect=patch(xrec,yrec,load');
+handle_rect=patch(xrec,yrec,load);
 set(handle_rect,'FaceColor','flat','FaceVertexCData',crec);
 warning off verbose
 % colorbar('EastOutside');
