@@ -93,8 +93,10 @@ LL = zeros(numL,numL);
 DL = zeros(numD,numL);
 OL = zeros(numO,numL);
 for l=1:numO
-    OL(l,l==links.fromNode)=1; % eerste numO links zijn de Origins
+    OL(l,l==links.fromNode)=1; % eerste numO links zijn de Origins, 
+    %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
 end
+
 LD = zeros(numL,numD);
 for l=1:numD
     LD(l==links.toNode,l)=1; % eerste numD links zijn de Destinations
@@ -124,13 +126,14 @@ while it < maxIt && gap>10^-3
     it = it+1;
         
     %Compute new flows via Recursive Logit  
-    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b,betas);
+    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,OL,UTurn,levelsDown,M,b,betas);
 
     %Calculate the update step
     update = (newDestinationFlows - destinationFlows);
     
     %Calculate new flows
-    destinationFlows = destinationFlows + 0.5*update;%(1/(it^(2/3)))
+%     destinationFlows = destinationFlows + 0.1*update;%(1/(it^(2/3)))
+    destinationFlows = destinationFlows + (1/(it^(2/3)))*update;
 
     %Convergence gap
     travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');

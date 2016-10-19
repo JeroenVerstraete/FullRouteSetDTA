@@ -34,7 +34,7 @@ beta = 4;
 
 
 flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu);
-flowsrl = rlEq(odmatrix,links,mu,[],[],[]);
+flowsrl = rlEq(odmatrix,links,mu,[],[],[],true);
 flowsVerschil = sum(flowsrl,2)-sum(flowsD,2);
 absVerschil=sumabs(flowsVerschil);
 
