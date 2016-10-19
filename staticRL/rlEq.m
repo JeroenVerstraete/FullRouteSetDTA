@@ -55,6 +55,7 @@ for l=1:numL
     connectionMatrix(l,[links.fromNode]==links.toNode(l))=1; %check if connection is possible
     UTurn(l,[links.fromNode]==links.toNode(l)&[links.toNode]==links.fromNode(l))=1; %check if u-turn
 end
+UTurn=[UTurn;zeros(numO,numL)];
 
 %check if hierarchy is present
 if isempty((find(strcmp(links.Properties.VariableNames, 'level'))))
@@ -69,6 +70,8 @@ goingDown=links.level(linksFrom)>links.level(linksTo);
 % verschil=links.level(linksFrom)-links.level(linksTo);
 % levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=verschil(goingDown); %linksFrom is rijnr, linksTo kolomnr => juiste element aanpassen
 levelsDown(linksFrom(goingDown)+numL*(linksTo(goingDown)-1))=1;
+
+levelsDown=[levelsDown;zeros(numO,numL)];
 
 %% Init warm/cold start
 
@@ -96,6 +99,8 @@ for l=1:numO
     OL(l,l==links.fromNode)=1; % eerste numO links zijn de Origins, 
     %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
 end
+
+connectionMatrix=[connectionMatrix;OL];
 
 LD = zeros(numL,numD);
 for l=1:numD
@@ -126,7 +131,7 @@ while it < maxIt && gap>10^-3
     it = it+1;
         
     %Compute new flows via Recursive Logit  
-    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,OL,UTurn,levelsDown,M,b,betas);
+    newDestinationFlows = RecLogit(ODmatrix,links,travelCosts,mu,connectionMatrix,UTurn,levelsDown,M,b,betas);
 
     %Calculate the update step
     update = (newDestinationFlows - destinationFlows);
