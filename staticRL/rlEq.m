@@ -1,4 +1,4 @@
-function [destinationFlows] = rlEq(ODmatrix,links,mu,travelCostsInit,destinationFlowsInit,betas,BoolFigure)
+function [destinationFlows] = rlEq(ODmatrix,links,mu,alpha,beta,travelCostsInit,destinationFlowsInit,betas,BoolFigure)
 %Run main to execute this.
 %
 %Method of proportions for calculating stochastic user
@@ -36,10 +36,6 @@ numL = size(links,1);
 %iteration number
 it = 0; 
 gap = inf;
-
-%variables for travelCost calculation
-alpha = 0.15;
-beta = 4;
 
 % diagonal ODmatrix =0
 ODmatrix(logical(eye(size(ODmatrix)))) = 0; 
@@ -137,13 +133,14 @@ while it < maxIt && gap>10^-3
     update = (newDestinationFlows - destinationFlows);
     
     %Calculate new flows
-%     destinationFlows = destinationFlows + 0.1*update;%(1/(it^(2/3)))
-    destinationFlows = destinationFlows + (1/(it^(2/3)))*update;
+    destinationFlows = destinationFlows + 0.5*update;%(1/(it^(2/3)))
+%     destinationFlows = destinationFlows + (1/(it^(2/3)))*update;
 
     %Convergence gap
     travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');
     %calculateCostBPR(alpha,beta,sum(destinationFlows,2),links.length,links.freeSpeed,links.capacity)
     gap = sum(sum(abs(update)));
+%     gap= max(max(abs(update)));
      
     %Plot convergence
     if(BoolFigure)
@@ -155,7 +152,13 @@ while it < maxIt && gap>10^-3
 end
 toc
 %% Display
-hold off
+if(BoolFigure)
+    title('Convergence RecLogit');
+    xlabel('Time');
+    ylabel('Gap');
+
+    hold off
+end
 
 display(['it: ',num2str(it)]);
 display(['gap (veh/h): ', num2str(gap)]);

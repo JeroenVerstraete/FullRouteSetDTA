@@ -8,11 +8,8 @@ close all
 % addpath('../Static Assignment','../Main Library')
 
 %% Loading a simple network
-%This is similar to the network used in the textbook of Cascetta on p.442
-% load toy_cascetta.mat
-
-load leuven.mat
-% load gent.mat
+networks={'highway.mat';'toy_cascetta.mat';'gent.mat';'leuven.mat'};
+load(networks{3})
 
 %plot the network
 % plotNetwork(nodes,links,true,[]);
@@ -28,7 +25,7 @@ beta = 4;
 %% Compute the Recursive Logit equilibrium
 %calculate flow (and plot the covergence)
 tic
-flows = rlEq(odmatrix,links,mu,[],[],[]);
+flows = rlEq(odmatrix,links,mu,alpha,beta,[],[],[],true);
 toc
 
 %visualize the result

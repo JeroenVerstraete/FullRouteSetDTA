@@ -21,66 +21,59 @@ beta = 4;
 % Consider the next network:
 load highway.mat
 plotNetwork(nodes,links,true,[]);
+
+%%
 % With only a demand from node 1 to node 2
 % If we now solve it by Dial, the convergence is not smooth
 % (A 'o' indicates only 1 route has been found in the current situation,
 % while a '.' indicates multiple routes.
-flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu);
+flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu,true);
 
 % With a higher demand, the patern comes even more clear.
-odmatrix(4)=100000;
-MSA_STOCH_D(odmatrix,nodes,links,mu);
-% After 500 iterations, the minimum gap has not been reached
+odmatrix(4)=10000;
+MSA_STOCH_D(odmatrix,nodes,links,mu,true);
+% After 100 iterations, the minimum gap has not been reached
 
+%%
 % While RL always consider the 2 possible routes (there are no loops
 % possible in this network)
-rlEq(odmatrix,links,mu,[],[],[-1.5,0,0],true);
-
 % Restore original demand
-odmatrix(4)=10000;
-flowsrl = rlEq(odmatrix,links,mu,[],[],[-1.5,0,0],true);
+odmatrix(4)=3000;
+flows1rl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
 
+% Where Dial has not converged with a higher demand, RL does:
+odmatrix(4)=10000;
+rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+
+%%
 % Visualize the difference in link flows (from original demand)
-flowsVerschil = sum(flowsrl,2)-sum(flowsD,2);
+flowsVerschil = sum(flows1rl,2)-sum(flowsD,2);
+plotLoadedLinks(nodes,links,sum(flows1rl,2),true,[],[],[],'Flows RL');
+plotLoadedLinks(nodes,links,sum(flowsD,2),true,[],[],[],'Flows Dial');
 plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil),[],'Flows RL-Dial');
 
+%%
+% Now that every route (even with loops) is conciderd, extra penalties need
+% to be taken.
+% If we adjust the network a little bit as follows:
+load network2.mat
+plotNetwork(nodes,links,true,[]);
 
-travel_costsD = calculateCostBPR(alpha,beta,sum(flowsD,2),links.length,links.freeSpeed,links.capacity);
-travel_costsrl = calculateCostBPR(alpha,beta,sum(flowsrl,2),links.length,links.freeSpeed,links.capacity);
+%%
+% If we than calculate the flows with Recursive Logit we get:
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
 
-%% Compute a deterministic MSA assignment
-%calculate flow
-% flowsrl is destination oriented, flowsD is origin oriented!
-
-
-
-% h = figure;
-% axis([-3 1 0 inf])
-% 
-% betas=[-1.5,-100,-1];
-% 
-% bmin=0;
-% verschilmin=inf;
-% for b = 0:-0.01:-2
-%     betas(3)=b;
-%     flowsrl = rlEq(odmatrix,links,mu,[],[],betas,false);
-%     flowsVerschil = sum(flowsrl,2)-sum(flowsD,2);
-%     absVerschil=sumabs(flowsVerschil);
-%     figure(h)
-%     hold on
-%     plot(b,absVerschil,'r.')
-%     drawnow;
-%     if(absVerschil<verschilmin)
-%         bmin=b;
-%         verschilmin=absVerschil;
-%     end
-% end
-
-%result: bmin=-1.17
-
-%visualize the result
-% plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
-% plotLoadedLinks(nodes,links,sum(flowsD,2),true,[],[],[],'Flows Dial');
-% plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],[],[],'Flows RL-Dial');
-% travel_costs = calculateCostBPR(alpha,beta,sum(flows,2),links.length,links.freeSpeed,links.capacity);
-% plotLoadedLinks(nodes,links,travel_costs,true,[],[],[],'Travel costs');
+% Witch seems to be very strange. We see that route with Uturns is used, and
+% even routes with loops in it!
+% In some ocasion, uturns and loops may be realistic (like parking search
+% behaviour), but not in this numbers. Therefor we add a penalty for making
+% Uturns. If we take the beta now equal to -100, we get:
+flows2rl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,-100,0],true);
+plotLoadedLinks(nodes,links,sum(flows2rl,2),true,[],[],[],'Flows RL');
+%%
+% If we plot the difference with the penalty of uturns against the network
+% with the prevouisly network we get:
+flowsVerschil = sum(flows2rl,2)-[sum(flows1rl,2);flows1rl(4);zeros(2,1)];
+plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil),[],'Flows RL with uturn penalty-without');
+% Witch results in the same flows.

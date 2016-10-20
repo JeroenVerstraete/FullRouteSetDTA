@@ -1,4 +1,4 @@
-function [flows] = MSA_STOCH_D(odmatrix,nodes,links,theta)
+function [flows] = MSA_STOCH_D(odmatrix,nodes,links,theta,BoolFigure)
 %Method of successive averages for calculating deterministic user
 %equilibrium
 %
@@ -16,12 +16,14 @@ function [flows] = MSA_STOCH_D(odmatrix,nodes,links,theta)
 %   theta: stochastic distribution parameter (related to the value of time) 
 
 %setup the output figure
-h = figure;
-semilogy(0,NaN);
+if(BoolFigure)
+    h = figure;
+    semilogy(0,NaN);
+end
 start_time = cputime;
 
 %Maximum number of iterations
-maxIt = 500; 
+maxIt = 100; 
 
 %initilization
 totLinks = size(links.toNode,1);
@@ -44,7 +46,7 @@ gap = inf;
 %MAIN LOOP: iterate until convergence is reached or maximum number of
 %iterations is reached
 tic
-while it < maxIt && gap > 10^-3
+while it < maxIt && gap > 10^-4
     it = it+1;
     
     %Compute new flows via the implicit routing scheme of Dail (1971) 
@@ -62,22 +64,31 @@ while it < maxIt && gap > 10^-3
     travelCosts = calculateCostBPR(alpha,beta,sum(originFlows,2),links.length,links.freeSpeed,links.capacity);
     
     %convergence gap
-    gap = sum(sum(abs(update)));
+%     gap = sum(sum(abs(update)));
+    gap= max(max(abs(update)));
     
         
     %plot convergence
-    figure(h) 
-    hold on
-    if(nrOD==1 && nnz(tmp)==1)
-        semilogy(cputime-start_time,gap,'ro')
-    else
-        semilogy(cputime-start_time,gap,'r.')
-    end
-        
     
-    drawnow
+    if(BoolFigure)    
+        figure(h) 
+        hold on
+        if(nrOD==1 && nnz(tmp)==1)
+            semilogy(cputime-start_time,gap,'ro')
+        else
+            semilogy(cputime-start_time,gap,'r.')
+        end
+        drawnow
+    end
 end
 toc
+
+if(BoolFigure)
+    title({'Convergence Dial'});
+    xlabel('Time');
+    ylabel({'Gap'});
+end
+
 %Check for number of iterations until convergence
 if it >= maxIt 
     disp(['Maximum Iteration limit reached: ', num2str(maxIt)]);

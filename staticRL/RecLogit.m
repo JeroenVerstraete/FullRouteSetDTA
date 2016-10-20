@@ -19,12 +19,13 @@ end
     
 TT=connectionMatrix.*repmat(travelCosts,size(connectionMatrix,1),1);
 v = beta_tt*TT+beta_Ut*UTurn+beta_hierarchy*levelsDown;
+% v=abs(v);
 
 % Cost from link you are going on to!
 
 %% Calculate M
 %M dimensions: (L+O+D)*(L+O+D)
-%only LL and OL is differend every iteration
+%only LL and OL are differend every iteration, [LL;OL]=LOL
 LOL = exp(1/mu*v).*(TT>0);
 M(1:numL+numO,1:numL)=LOL;
 

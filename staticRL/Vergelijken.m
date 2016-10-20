@@ -11,11 +11,9 @@ addpath('Static Assignment','Main Library','staticRL')
 % addpath('../Static Assignment','../Main Library')
 
 %% Loading a simple network
-%This is similar to the network used in the textbook of Cascetta on p.442
-% load toy_cascetta.mat
+networks={'highway.mat';'toy_cascetta.mat';'gent.mat';'leuven.mat'};
+load(networks{3})
 
-% load leuven.mat
-load gent.mat
 
 %plot the network
 % plotNetwork(nodes,links,true,[]);
@@ -33,9 +31,9 @@ beta = 4;
 % flowsrl is destination oriented, flowsD is origin oriented!
 
 
-flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu);
-flowsrl = rlEq(odmatrix,links,mu,[],[],[],true);
-flowsVerschil = sum(flowsrl,2)-sum(flowsD,2);
+flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu,false);
+flowsrl2 = rlEq(odmatrix,links,mu,alpha,beta,[],[],[],true);
+flowsVerschil = sum(flowsrl,2)-sum(flowsrl2,2);
 absVerschil=sumabs(flowsVerschil);
 
 %visualize the result
