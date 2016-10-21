@@ -5,7 +5,7 @@ close all
 
 %% First add these folders to the search path
 javaclasspath('Static Assignment');
-addpath('Static Assignment','Main Library','staticRL')
+addpath('Static Assignment','Main Library','staticRL','Networks')
 
 %% Initializing
 %Initialize parameters travelcost
@@ -19,17 +19,18 @@ beta = 4;
 
 % On a simple netwerk, this can be visualised. 
 % Consider the next network:
-load highway.mat
+load network1.mat
 plotNetwork(nodes,links,true,[]);
 
 %%
 % With only a demand from node 1 to node 2
-% If we now solve it by Dial, the convergence is not smooth
-% (A 'o' indicates only 1 route has been found in the current situation,
-% while a '.' indicates multiple routes.
+% If we now solve it by Dial, we see a realtive smooth convergence
 flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu,true);
 
-% With a higher demand, the patern comes even more clear.
+% With a higher demand, the topologic order changes sometimes
+% (A 'o' indicates only 1 route has been found in the current situation,
+% while a '.' indicates multiple routes.)
+% Here the convergence is not smooth anymore
 odmatrix(4)=10000;
 MSA_STOCH_D(odmatrix,nodes,links,mu,true);
 % After 100 iterations, the minimum gap has not been reached
@@ -58,6 +59,7 @@ plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil)
 % If we adjust the network a little bit as follows:
 load network2.mat
 plotNetwork(nodes,links,true,[]);
+% Notice that loops are possible now!
 
 %%
 % If we than calculate the flows with Recursive Logit we get:
@@ -77,3 +79,26 @@ plotLoadedLinks(nodes,links,sum(flows2rl,2),true,[],[],[],'Flows RL');
 flowsVerschil = sum(flows2rl,2)-[sum(flows1rl,2);flows1rl(4);zeros(2,1)];
 plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil),[],'Flows RL with uturn penalty-without');
 % Witch results in the same flows.
+
+%%
+% An other penalty that can take place, is a penalty of going donw in the
+% hierarchy of the links. This is for advoiding traffic going on a lower
+% level link to slighty have a shorter route
+% Consider the following network (where there are no loops!):
+load network3.mat
+plotNetwork(nodes,links,true,[]);
+% The straight line is a highway, with the precense of two off and off
+% ramps
+
+% With the same demand (now going from node 1 to node 5) we get:
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
+
+% Let say the route over the lower level of links is not realistic, we can
+% now give a penalty to 'going down in the hierachy'.
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,-5],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
+
+% We see that only a few take the alternative route. This can be adjusted
+% by 'selecting' (calibrating) the right value for the beta for this
+% penalty
