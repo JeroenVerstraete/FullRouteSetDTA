@@ -3,9 +3,10 @@ clear
 clc
 close all
 
-%% First add these folders to the search path
-javaclasspath('Static Assignment');
-addpath('Static Assignment','Main Library','staticRL','Networks')
+%% First add the folders
+% Matlab directory is 'ThesisJeroen'
+javaclasspath('/Main Library/Static Assignment');
+addpath(genpath(pwd))
 
 %% Initializing
 %Initialize parameters travelcost

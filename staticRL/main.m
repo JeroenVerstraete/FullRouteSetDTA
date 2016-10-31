@@ -3,9 +3,10 @@ clear
 clc
 close all
 
-%% First add these folders to the search path
-% javaclasspath('../Static Assignment');
-% addpath('../Static Assignment','../Main Library')
+%% First add the folders
+% Matlab directory is 'ThesisJeroen'
+javaclasspath('/Main Library/Static Assignment');
+addpath(genpath(pwd))
 
 %% Loading a simple network
 networks={'highway.mat';'toy_cascetta.mat';'gent.mat';'leuven.mat'};

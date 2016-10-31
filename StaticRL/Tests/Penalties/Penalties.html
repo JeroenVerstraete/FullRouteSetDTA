@@ -1,0 +1,282 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Penalties</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-10-31"><meta name="DC.source" content="Penalties.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#1">Clear and close everything</a></li><li><a href="#2">First add the folders</a></li><li><a href="#3">Initializing</a></li><li><a href="#4">All routes</a></li></ul></div><h2>Clear and close everything<a name="1"></a></h2><pre class="codeinput">clear
+clc
+close <span class="string">all</span>
+</pre><h2>First add the folders<a name="2"></a></h2><p>Matlab directory is 'ThesisJeroen'</p><pre class="codeinput">javaclasspath(<span class="string">'/Main Library/Static Assignment'</span>);
+addpath(genpath(pwd))
+</pre><h2>Initializing<a name="3"></a></h2><pre class="codeinput"><span class="comment">%Initialize parameters travelcost</span>
+mu=1;
+alpha = 0.15;
+beta = 4;
+</pre><h2>All routes<a name="4"></a></h2><p>While Dial's route set depends on the topologic order (and thus on the costs), the RL's route set is always complete</p><pre class="codeinput"><span class="comment">% On a simple netwerk, this can be visualised.</span>
+<span class="comment">% Consider the next network:</span>
+load <span class="string">network1.mat</span>
+plotNetwork(nodes,links,true,[]);
+</pre><img vspace="5" hspace="5" src="Penalties_01.png" alt=""> <p>With only a demand from node 1 to node 2 If we now solve it by Dial, we see a realtive smooth convergence</p><pre class="codeinput">flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu,true);
+
+<span class="comment">% With a higher demand, the topologic order changes sometimes</span>
+<span class="comment">% (A 'o' indicates only 1 route has been found in the current situation,</span>
+<span class="comment">% while a '.' indicates multiple routes.)</span>
+<span class="comment">% Here the convergence is not smooth anymore</span>
+odmatrix(4)=10000;
+MSA_STOCH_D(odmatrix,nodes,links,mu,true);
+<span class="comment">% After 100 iterations, the minimum gap has not been reached</span>
+</pre><pre class="codeoutput">Elapsed time is 5.841465 seconds.
+Converged in iteration 87
+Elapsed time is 5.988472 seconds.
+Maximum Iteration limit reached: 100
+</pre><img vspace="5" hspace="5" src="Penalties_02.png" alt=""> <img vspace="5" hspace="5" src="Penalties_03.png" alt=""> <p>While RL always consider the 2 possible routes (there are no loops possible in this network) Restore original demand</p><pre class="codeinput">odmatrix(4)=3000;
+flows1rl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+
+<span class="comment">% Where Dial has not converged with a higher demand, RL does:</span>
+odmatrix(4)=10000;
+rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+</pre><pre class="codeoutput">Elapsed time is 2.058756 seconds.
+it: 23
+gap (veh/h): 0.00084854
+max update flow (veh/h): 0.00058197
+relative gap: 2.8285e-07
+Converged in iteration 23
+Elapsed time is 1.636413 seconds.
+it: 25
+gap (veh/h): 0.00067869
+max update flow (veh/h): 0.0005134
+relative gap: 6.7869e-08
+Converged in iteration 25
+</pre><img vspace="5" hspace="5" src="Penalties_04.png" alt=""> <img vspace="5" hspace="5" src="Penalties_05.png" alt=""> <p>Visualize the difference in link flows (from original demand)</p><pre class="codeinput">flowsVerschil = sum(flows1rl,2)-sum(flowsD,2);
+plotLoadedLinks(nodes,links,sum(flows1rl,2),true,[],[],[],<span class="string">'Flows RL'</span>);
+plotLoadedLinks(nodes,links,sum(flowsD,2),true,[],[],[],<span class="string">'Flows Dial'</span>);
+plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil),[],<span class="string">'Flows RL-Dial'</span>);
+</pre><img vspace="5" hspace="5" src="Penalties_06.png" alt=""> <img vspace="5" hspace="5" src="Penalties_07.png" alt=""> <img vspace="5" hspace="5" src="Penalties_08.png" alt=""> <p>Now that every route (even with loops) is conciderd, extra penalties need to be taken. If we adjust the network a little bit as follows:</p><pre class="codeinput">load <span class="string">network2.mat</span>
+plotNetwork(nodes,links,true,[]);
+<span class="comment">% Notice that loops are possible now!</span>
+</pre><img vspace="5" hspace="5" src="Penalties_09.png" alt=""> <p>If we than calculate the flows with Recursive Logit we get:</p><pre class="codeinput">flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],<span class="string">'Flows RL'</span>);
+
+<span class="comment">% Witch seems to be very strange. We see that route with Uturns is used, and</span>
+<span class="comment">% even routes with loops in it!</span>
+<span class="comment">% In some ocasion, uturns and loops may be realistic (like parking search</span>
+<span class="comment">% behaviour), but not in this numbers. Therefor we add a penalty for making</span>
+<span class="comment">% Uturns. If we take the beta now equal to -100, we get:</span>
+flows2rl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,-100,0],true);
+plotLoadedLinks(nodes,links,sum(flows2rl,2),true,[],[],[],<span class="string">'Flows RL'</span>);
+</pre><pre class="codeoutput">Elapsed time is 2.547147 seconds.
+it: 27
+gap (veh/h): 0.00072683
+max update flow (veh/h): 0.00031871
+relative gap: 2.4228e-07
+Converged in iteration 27
+Elapsed time is 2.507333 seconds.
+it: 24
+gap (veh/h): 0.00071526
+max update flow (veh/h): 0.0002928
+relative gap: 2.3842e-07
+Converged in iteration 24
+</pre><img vspace="5" hspace="5" src="Penalties_10.png" alt=""> <img vspace="5" hspace="5" src="Penalties_11.png" alt=""> <img vspace="5" hspace="5" src="Penalties_12.png" alt=""> <img vspace="5" hspace="5" src="Penalties_13.png" alt=""> <p>If we plot the difference with the penalty of uturns against the network with the prevouisly network we get:</p><pre class="codeinput">flowsVerschil = sum(flows2rl,2)-[sum(flows1rl,2);flows1rl(4);zeros(2,1)];
+plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil),[],<span class="string">'Flows RL with uturn penalty-without'</span>);
+<span class="comment">% Witch results in the same flows.</span>
+</pre><img vspace="5" hspace="5" src="Penalties_14.png" alt=""> <p>An other penalty that can take place, is a penalty of going donw in the hierarchy of the links. This is for advoiding traffic going on a lower level link to slighty have a shorter route Consider the following network (where there are no loops!):</p><pre class="codeinput">load <span class="string">network3.mat</span>
+plotNetwork(nodes,links,true,[]);
+<span class="comment">% The straight line is a highway, with the precense of two off and off</span>
+<span class="comment">% ramps</span>
+
+<span class="comment">% With the same demand (now going from node 1 to node 5) we get:</span>
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],<span class="string">'Flows RL'</span>);
+
+<span class="comment">% Let say the route over the lower level of links is not realistic, we can</span>
+<span class="comment">% now give a penalty to 'going down in the hierachy'.</span>
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,-5],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],<span class="string">'Flows RL'</span>);
+
+<span class="comment">% We see that only a few take the alternative route. This can be adjusted</span>
+<span class="comment">% by 'selecting' (calibrating) the right value for the beta for this</span>
+<span class="comment">% penalty</span>
+</pre><pre class="codeoutput">Elapsed time is 2.636897 seconds.
+it: 25
+gap (veh/h): 0.00077192
+max update flow (veh/h): 0.00017881
+relative gap: 2.5731e-07
+Converged in iteration 25
+Elapsed time is 2.285119 seconds.
+it: 25
+gap (veh/h): 0.00071924
+max update flow (veh/h): 0.00017881
+relative gap: 2.3975e-07
+Converged in iteration 25
+</pre><img vspace="5" hspace="5" src="Penalties_15.png" alt=""> <img vspace="5" hspace="5" src="Penalties_16.png" alt=""> <img vspace="5" hspace="5" src="Penalties_17.png" alt=""> <img vspace="5" hspace="5" src="Penalties_18.png" alt=""> <img vspace="5" hspace="5" src="Penalties_19.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Clear and close everything
+clear
+clc
+close all
+
+%% First add the folders
+% Matlab directory is 'ThesisJeroen'
+javaclasspath('/Main Library/Static Assignment');
+addpath(genpath(pwd))
+
+%% Initializing
+%Initialize parameters travelcost
+mu=1;
+alpha = 0.15;
+beta = 4;
+
+%% All routes
+% While Dial's route set depends on the topologic order (and thus on the
+% costs), the RL's route set is always complete
+
+% On a simple netwerk, this can be visualised. 
+% Consider the next network:
+load network1.mat
+plotNetwork(nodes,links,true,[]);
+
+%%
+% With only a demand from node 1 to node 2
+% If we now solve it by Dial, we see a realtive smooth convergence
+flowsD = MSA_STOCH_D(odmatrix,nodes,links,mu,true);
+
+% With a higher demand, the topologic order changes sometimes
+% (A 'o' indicates only 1 route has been found in the current situation,
+% while a '.' indicates multiple routes.)
+% Here the convergence is not smooth anymore
+odmatrix(4)=10000;
+MSA_STOCH_D(odmatrix,nodes,links,mu,true);
+% After 100 iterations, the minimum gap has not been reached
+
+%%
+% While RL always consider the 2 possible routes (there are no loops
+% possible in this network)
+% Restore original demand
+odmatrix(4)=3000;
+flows1rl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+
+% Where Dial has not converged with a higher demand, RL does:
+odmatrix(4)=10000;
+rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+
+%%
+% Visualize the difference in link flows (from original demand)
+flowsVerschil = sum(flows1rl,2)-sum(flowsD,2);
+plotLoadedLinks(nodes,links,sum(flows1rl,2),true,[],[],[],'Flows RL');
+plotLoadedLinks(nodes,links,sum(flowsD,2),true,[],[],[],'Flows Dial');
+plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil),[],'Flows RL-Dial');
+
+%%
+% Now that every route (even with loops) is conciderd, extra penalties need
+% to be taken.
+% If we adjust the network a little bit as follows:
+load network2.mat
+plotNetwork(nodes,links,true,[]);
+% Notice that loops are possible now!
+
+%%
+% If we than calculate the flows with Recursive Logit we get:
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
+
+% Witch seems to be very strange. We see that route with Uturns is used, and
+% even routes with loops in it!
+% In some ocasion, uturns and loops may be realistic (like parking search
+% behaviour), but not in this numbers. Therefor we add a penalty for making
+% Uturns. If we take the beta now equal to -100, we get:
+flows2rl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,-100,0],true);
+plotLoadedLinks(nodes,links,sum(flows2rl,2),true,[],[],[],'Flows RL');
+%%
+% If we plot the difference with the penalty of uturns against the network
+% with the prevouisly network we get:
+flowsVerschil = sum(flows2rl,2)-[sum(flows1rl,2);flows1rl(4);zeros(2,1)];
+plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil),[],'Flows RL with uturn penalty-without');
+% Witch results in the same flows.
+
+%%
+% An other penalty that can take place, is a penalty of going donw in the
+% hierarchy of the links. This is for advoiding traffic going on a lower
+% level link to slighty have a shorter route
+% Consider the following network (where there are no loops!):
+load network3.mat
+plotNetwork(nodes,links,true,[]);
+% The straight line is a highway, with the precense of two off and off
+% ramps
+
+% With the same demand (now going from node 1 to node 5) we get:
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
+
+% Let say the route over the lower level of links is not realistic, we can
+% now give a penalty to 'going down in the hierachy'.
+flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,-5],true);
+plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
+
+% We see that only a few take the alternative route. This can be adjusted
+% by 'selecting' (calibrating) the right value for the beta for this
+% penalty
+##### SOURCE END #####
+--></body></html>
