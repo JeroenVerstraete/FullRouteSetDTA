@@ -5,7 +5,7 @@ close all
 
 %% First add the folders
 % Matlab directory is 'ThesisJeroen'
-javaclasspath('/Main Library/Static Assignment');
+javaclasspath('/Main Library/Static Assignment')
 addpath(genpath(pwd))
 
 %% Loading a simple network
