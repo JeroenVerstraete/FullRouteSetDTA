@@ -3,7 +3,7 @@ close all
 
 %% First add the folders
 % Matlab directory is 'ThesisJeroen'
-javaclasspath('/Main Library/Dynamic Assignment')
+javaclasspath('/ThesisJeroen/Main Library/Dynamic Assignment')
 addpath(genpath(pwd))
 
 load net5.mat

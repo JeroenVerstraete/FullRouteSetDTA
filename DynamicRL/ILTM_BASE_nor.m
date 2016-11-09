@@ -1,4 +1,4 @@
-function [cvn_up,cvn_down] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF)
+function [cvn_up,cvn_down] = ILTM_BASE_nor(nodes,links,origins,destinations,ODmatrix,dt,totT,TF)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %link transmission assignment procedure                                   %
 %                                                                         %
@@ -28,7 +28,7 @@ function [cvn_up,cvn_down] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt
 % or contact: willem.himpe {@} kuleuven.be
 
 %size of the network
-totLinks = length(links.fromNode);
+totLinks = length(links.id);
 totDest = length(destinations);
 
 %time slices for which a solution is build
@@ -49,69 +49,93 @@ lengths = links.length;
 wSpeeds = capacities./(kJams-capacities./freeSpeeds);
 
 normalNodes = setdiff(nodes.id,[origins,destinations]);
-
+avg_it = 0;
+max_it = 0;
 %forward explicit scheme
 %go sequentially over each time step (first time step => all zeros)
 for t=2:totT+1
+    %initialize cvn values of the new time slice
+    for d=1:totDest
+        cvn_down(:,t,d)=cvn_down(:,t-1,d);
+        cvn_up(:,t,d)=cvn_up(:,t-1,d);
+    end
+    
     %ORIGIN NODES<--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     %this nested function goes over all origin nodes
     loadOriginNodes(t);
     
-    %ACTUAL LTM <---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    %go over all normal nodes in this time step
-    for nIndex=1:length(normalNodes);
-        %STANDARD NODES<--------------------------------------------------------------------------------------------------------------------------------------------------------------------
-        %most function calls will end up here
-        n=normalNodes(nIndex);
-                
-        %CALCULATE THE SENDING FLOW<--------------------------------------------------------------------------------------------------------------------------------------------------------
-        %this is the maximum number of vehicles comming from the
-        %incoming links that want to travel over a node within this
-        %time interval
-        incomingLinks = find(toNodes==n);
-        nbIn = length(incomingLinks);
-        SF_d = zeros(nbIn,totDest);
-        SF_tot = zeros(nbIn,1);
-        SF = zeros(nbIn,1);
-        for l_index=1:nbIn
-            l=incomingLinks(l_index);
-            SF_d(l_index,:) = calculateDestSendFlow(l,t);
-            SF_tot(l_index) = sum(SF_d(l_index,:));
-            SF(l_index) = min(capacities(l)*dt,SF_tot(l_index));
-        end
-        
-        %CALCULATE RECEIVING FLOW<-----------------------------------------------------------------------------------------------------------------------------------------------------------
-        %this is the maximum number of vehicles that can flow into the
-        %outgoing links within this time interval
-        outgoingLinks = find(fromNodes==n);
-        nbOut = length(outgoingLinks);
-        RF = zeros(nbOut,1);
-        for l_index=1:nbOut
-            l=outgoingLinks(l_index);
-%             RF(l_index) = calculateReceivingFlow_VQ(l,t);
-%             RF(l_index) = calculateReceivingFlow_HQ(l,t);
-            RF(l_index) = calculateReceivingFlow_FQ(l,t);
-        end
-        
-        %CALCULATE TURNING FRACTIONS<---------------------------------------------------------------------------------------------------------------------------
-        %this calculates the split rates of all flows that run over the node
-        TF_n = calculateTurningFractions(n,t-1);
-         
-        %compute transfer flows with the NODE MODEL
-        TransferFlow = NodeModel(nbIn,nbOut,SF,TF_n,RF,capacities(incomingLinks)*dt);
-         
-        %update CVN values
-        red = sum(TransferFlow,2)./(eps+SF_tot);
-        for d = 1:totDest
-            cvn_down(incomingLinks,t,d)=cvn_down(incomingLinks,t-1,d)+red.*SF_d(:,d);
-            cvn_up(outgoingLinks,t,d)=cvn_up(outgoingLinks,t-1,d)+((red.*SF_d(:,d))'*TF{n,t-1,d})';
-        end
+    %ACTUAL ILTM <---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    %iterate until convergence
+    %initialize a new time slice
+    cvn_diff=inf;
+    it = 0;
+    while cvn_diff>10^-6
+        cvn_diff = 0;
+        it = it + 1;
+        %go over all normal nodes in this time step
+        for nIndex=1:length(normalNodes);
+            %STANDARD NODES<--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            %most function calls will end up here
+            n=normalNodes(nIndex);
+
+            %CALCULATE THE SENDING FLOW<--------------------------------------------------------------------------------------------------------------------------------------------------------
+            %this is the maximum number of vehicles comming from the
+            %incoming links that want to travel over a node within this
+            %time interval
+            incomingLinks = find(toNodes==n);
+            nbIn = length(incomingLinks);
+            SF_d = zeros(nbIn,totDest);
+            SF_tot = zeros(nbIn,1);
+            SF = zeros(nbIn,1);
+            for l_index=1:nbIn
+                l=incomingLinks(l_index);
+                SF_d(l_index,:) = calculateDestSendFlow(l,t);
+                SF_tot(l_index) = sum(SF_d(l_index,:));
+                SF(l_index) = min(capacities(l)*dt,SF_tot(l_index));
+            end
+
+            %CALCULATE RECEIVING FLOW<-----------------------------------------------------------------------------------------------------------------------------------------------------------
+            %this is the maximum number of vehicles that can flow into the
+            %outgoing links within this time interval
+            outgoingLinks = find(fromNodes==n);
+            nbOut = length(outgoingLinks);
+            RF = zeros(nbOut,1);
+            for l_index=1:nbOut
+                l=outgoingLinks(l_index);
+    %             RF(l_index) = calculateReceivingFlow_VQ(l,t);
+    %             RF(l_index) = calculateReceivingFlow_HQ(l,t);
+                RF(l_index) = calculateReceivingFlow_FQ(l,t);
+            end
+
+            %CALCULATE TURNING FRACTIONS<---------------------------------------------------------------------------------------------------------------------------
+            %this calculates the split rates of all flows that run over the node
+            TF_n = calculateTurningFractions(n,t-1);
+
+            %compute transfer flows with the NODE MODEL
+            TransferFlow = NodeModel(nbIn,nbOut,SF,TF_n,RF,capacities(incomingLinks)*dt);
+
+            %update CVN values
+            red = sum(TransferFlow,2)./(eps+SF_tot);
+            for d = 1:totDest
+                cvn_diff=cvn_diff+sum(abs(cvn_down(incomingLinks,t-1,d)+red.*SF_d(:,d)-cvn_down(incomingLinks,t,d)));
+                cvn_diff=cvn_diff+sum(abs(cvn_up(outgoingLinks,t-1,d)+((red.*SF_d(:,d))'*TF{n,t-1,d})'-cvn_up(outgoingLinks,t,d)));
+            
+                cvn_down(incomingLinks,t,d)=cvn_down(incomingLinks,t-1,d)+red.*SF_d(:,d);
+                cvn_up(outgoingLinks,t,d)=cvn_up(outgoingLinks,t-1,d)+((red.*SF_d(:,d))'*TF{n,t-1,d})';
+            end
+        end        
     end
     
     %DESTINATION NODES<----------------------------------------------------------------------------------------------------------------------------
     %this nested function goes over all destination nodes
     loadDestinationNodes(t);
+    
+    max_it=max(max_it,it);
+    avg_it=avg_it+it;
 end
+display(['average number of iterations: ',num2str(avg_it/totT)]);
+display(['maximum number of iterations: ',num2str(max_it)]);
+display(['total number of node updates: ',num2str(avg_it*length(normalNodes)+totT*(length(nodes.id)-length(normalNodes)))])
 
     %All nested function follow below:
 
@@ -141,10 +165,14 @@ end
 
     %Nested function for finding receiving flows for a physical queue
     function RF = calculateReceivingFlow_FQ(l,t)
-        RF = capacities(l)*dt;
-        time = timeSlices(t)-lengths(l)/wSpeeds(l);
-        val = findCVN(sum(cvn_down(l,:,:),3),time,timeSlices,dt)+kJams(l)*lengths(l);
-        RF = min(RF,val-sum(cvn_up(l,t-1,:),3));
+        if any(toNodes(l)==destinations)
+            RF = capacities(l)*dt;
+        else
+            RF = capacities(l)*dt;
+            time = timeSlices(t)-lengths(l)/wSpeeds(l);
+            val = findCVN(sum(cvn_down(l,:,:),3),time,timeSlices,dt)+kJams(l)*lengths(l);
+            RF = min(RF,val-sum(cvn_up(l,t-1,:),3));
+        end
     end
 
     %Nested function for finding turning fractions
@@ -174,7 +202,7 @@ end
                 l=outgoingLinks(l_index);
                 for d_index = 1:totDest
                     %calculation sending flow
-                    SF_d = TF{o,t-1,d_index}.*sum(ODmatrix(o_index,d_index,t-1))*dt;
+                    SF_d = sum(sum(TF{o,t-1,d_index})).*sum(ODmatrix(o_index,d_index,t-1))*dt;
                     cvn_up(l,t,d_index)=cvn_up(l,t-1,d_index) + SF_d;
                 end
             end
