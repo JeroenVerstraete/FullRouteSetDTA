@@ -1,4 +1,4 @@
-function [destinationFlows] = rlEq(ODmatrix,links,mu,alpha,beta,travelCostsInit,destinationFlowsInit,betas,BoolFigure)
+function [destinationFlows] = rlEq(ODmatrix,origins,destinations,links,mu,alpha,beta,travelCostsInit,destinationFlowsInit,betas,BoolFigure)
 %Run main to execute this.
 %
 %Method of proportions for calculating stochastic user
@@ -27,10 +27,10 @@ if(BoolFigure)
     semilogy(0,NaN);
 end
 start_time = cputime;
-maxIt = 2000; %Computation criterion
+maxIt = 2000;%2000; %Computation criterion
 
-numD = size(ODmatrix,2);
-numO = size(ODmatrix,1);
+numD = size(destinations,2);
+numO = size(origins,2);
 numL = size(links,1);
 
 %iteration number
@@ -92,7 +92,7 @@ LL = zeros(numL,numL);
 DL = zeros(numD,numL);
 OL = zeros(numO,numL);
 for l=1:numO
-    OL(l,l==links.fromNode)=1; % eerste numO links zijn de Origins, 
+    OL(l,origins(l)==links.fromNode)=1; % eerste numO links zijn de Origins, 
     %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
 end
 
@@ -100,7 +100,7 @@ connectionMatrix=[connectionMatrix;OL];
 
 LD = zeros(numL,numD);
 for l=1:numD
-    LD(l==links.toNode,l)=1; % eerste numD links zijn de Destinations
+    LD(destinations(l)==links.toNode,l)=1; % eerste numD links zijn de Destinations
 end
 DD = zeros(numD,numD);
 OD = zeros(numO,numD); %heeft geen betekenis op het netwerk

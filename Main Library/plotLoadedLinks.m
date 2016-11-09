@@ -91,8 +91,8 @@ end
 crec=cmap(ceil(49*(load'-minc+100*eps)/(maxc-minc+100*eps))',:);
 caxis([minc maxc]);
 
-yrec(yrec<0)=0;
-xrec(xrec<0)=0;
+% yrec(yrec<0)=0;
+% xrec(xrec<0)=0;
 
 %visualize all loads
 handle_rect=patch(xrec,yrec,load);

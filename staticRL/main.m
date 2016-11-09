@@ -9,9 +9,10 @@ javaclasspath('/Main Library/Static Assignment')
 addpath(genpath(pwd))
 
 %% Loading a simple network
-networks={'highway.mat';'toy_cascetta.mat';'gent.mat';'leuven.mat'};
-load(networks{3})
+networks={'highway.mat';'toy_cascetta.mat';'gent.mat';'leuven.mat';'network1.mat'};
+load(networks{2})
 
+[odmatrix,origins,destinations]=ODmatrix(odmatrix);
 %plot the network
 % plotNetwork(nodes,links,true,[]);
 % plotLoadedLinks(nodes,links,links.length,true,[],[],[],'links.length');
@@ -26,7 +27,7 @@ beta = 4;
 %% Compute the Recursive Logit equilibrium
 %calculate flow (and plot the covergence)
 tic
-flows = rlEq(odmatrix,links,mu,alpha,beta,[],[],[],true);
+flows = rlEq(odmatrix,origins,destinations,links,mu,alpha,beta,[],[],[],true);
 toc
 
 %visualize the result

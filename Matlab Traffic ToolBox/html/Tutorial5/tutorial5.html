@@ -1,0 +1,419 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Tutorial 5: Comparing single commodity (SC) &amp; multi commodity (MC)</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-06-25"><meta name="DC.source" content="tutorial5.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Tutorial 5: Comparing single commodity (SC) &amp; multi commodity (MC)</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Disclaimer</a></li><li><a href="#2">Introduction</a></li><li><a href="#3">Loading the data</a></li><li><a href="#4">Setup the simulation</a></li><li><a href="#5">Visualize the demand in the network</a></li><li><a href="#6">initilize the global turning fractions</a></li><li><a href="#7">initilize the Destination Based Split rates</a></li><li><a href="#8">Compute the single-commodity Dynamic Network Loading</a></li><li><a href="#9">Compute a multi-commodity Dynamic Network Loading</a></li><li><a href="#10">Visualize the resulting densities using XT diagrams</a></li><li><a href="#11">Compute the maximum difference between both solutions</a></li><li><a href="#12">Closing notes</a></li></ul></div><h2>Disclaimer<a name="1"></a></h2><p>This file is part of the matlab package for dynamic traffic assignments developed by the KULeuven.</p><p>Copyright (C) 2016  Himpe Willem, Leuven, Belgium</p><p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p><p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p><p>More information at: <a href="http://www.mech.kuleuven.be/en/cib/traffic/downloads">http://www.mech.kuleuven.be/en/cib/traffic/downloads</a> or contact: willem.himpe {@} kuleuven.be</p><h2>Introduction<a name="2"></a></h2><p>This tutorial compares a single commodity (SC) dynamic network loading with a multi commodity (MC) dynamic network loading. In both cases the link transmission model is used to propagate the traffic over the network. In a SC dynamic network loading exogenously defined turning rates are defined to guide the traffic (that is modelled as a single stream) from origins to destinations. The turning rates have to be set such that the demand is distributed consistenly from each origin towards each destination.This requires taking into account delays in the network. If this is not modelled accurately some flows might reach a wrong destination. In a MC dynamic network loading this problem is solved by explicitly modelling route specific flows or destination bound flows. However this requires storing more information in memory.</p><pre class="codeinput"><span class="comment">%add these folders to the search path</span>
+addpath(<span class="string">'Dynamic Traffic Assignment'</span>,<span class="string">'Visualization Tools'</span>,<span class="string">'Network Data'</span>)
+<span class="comment">%clear the work space</span>
+clear
+<span class="comment">%clear the command window</span>
+clc
+<span class="comment">%close all windows</span>
+close <span class="string">all</span>
+
+display(<span class="string">'&lt;&lt;&lt;Comparing single commodity (SC) &amp; multi commodity (MC)&gt;&gt;&gt;'</span>)
+</pre><pre class="codeoutput">&lt;&lt;&lt;Comparing single commodity (SC) &amp; multi commodity (MC)&gt;&gt;&gt;
+</pre><h2>Loading the data<a name="3"></a></h2><p>The network represents a two-lane road with vehicles moving from right to left. There are two on-ramps feeding additional traffic into the system and one crossing road (moving from below to the top). The demand pattern is chosen such that the most downstream merge forms a temporary bottleneck and congestion spills back over the node.</p><pre class="codeinput"><span class="comment">% Network and demand data</span>
+load <span class="string">net4.mat</span>
+
+<span class="comment">% Plot the network</span>
+plotNetwork(nodes,links,true,[]);
+</pre><img vspace="5" hspace="5" src="tutorial5_01.png" alt=""> <h2>Setup the simulation<a name="4"></a></h2><p>Before the simulation can be run the time interval has to be set and the total number of time steps has to be defined. These are used to transform the different origin-destination (OD-) matrices into a 3D-matrix. The time interval is bound by CFL-conditions. It can not be larger then the minimal travel time of the fastest kinematic wave in the network.</p><pre class="codeinput"><span class="comment">%setup the time interval and total number of time steps</span>
+dt = min(links.length./links.freeSpeed);
+totT = round(2/dt);
+
+<span class="comment">%build the full ODmatrix</span>
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+</pre><h2>Visualize the demand in the network<a name="5"></a></h2><p>The demand between every origin-destination combination is plotted for each time interval of the simulation.</p><pre class="codeinput">figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,1,:),1,[]),<span class="string">'d-b'</span>,dt*[0:totT-1],reshape(ODmatrix(2,1,:),1,[]),<span class="string">'.-r'</span>,dt*[0:totT-1],reshape(ODmatrix(3,1,:),1,[]),<span class="string">'.-m'</span>,dt*[0:totT-1],reshape(ODmatrix(4,1,:),1,[]),<span class="string">'x-g'</span>)
+legend(<span class="string">'OD 1-28'</span>,<span class="string">'OD 34-28'</span>,<span class="string">'OD 37-28'</span>,<span class="string">'OD 40-28'</span>)
+xlabel(<span class="string">'time (h)'</span>)
+ylabel(<span class="string">'flow (veh/h)'</span>)
+
+figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,2,:),1,[]),<span class="string">'d-b'</span>,dt*[0:totT-1],reshape(ODmatrix(3,2,:),1,[]),<span class="string">'.-r'</span>,dt*[0:totT-1],reshape(ODmatrix(2,2,:),1,[]),<span class="string">'x-g'</span>)
+legend(<span class="string">'OD 1-31'</span>,<span class="string">'OD 37-31'</span>,<span class="string">'OD 34-31'</span>)
+xlabel(<span class="string">'time (h)'</span>)
+ylabel(<span class="string">'flow (veh/h)'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial5_02.png" alt=""> <img vspace="5" hspace="5" src="tutorial5_03.png" alt=""> <h2>initilize the global turning fractions<a name="6"></a></h2><p>The global turning fractions for a single commodity network loading have to be defined for each time interval. The demand pattern describes that 25% of traffic on the main road makes a right turn at the intersection during the first half of the simulation while 75% of traffic on the main road makes this turn during the second half of the simulation. However because of delays on the main road the actual change in split will not take place half way the simulation but later. A consistent solution can only be found by iterating the dynamic network loading and the computation of the splitting rates taking into account the delays of the last loading. A fraction (25%) of the vehicles on the main road make a right turn at the crossing road. The turning fractions have to be defined for each time interval. They are stored in a cell array where each cell represents the turns in matrix with size [#incoming links, #outgoing links].</p><pre class="codeinput">TF = num2cell(ones(size(nodes.id,1),totT));
+<span class="keyword">for</span> t=1:totT/2
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+    TF{15,t} = [0.75 0.25;
+                 1    0 ];
+<span class="keyword">end</span>
+
+<span class="comment">%To account for change in OD flow (departed at time = 0.9375 and arriving in free flow at totT/2 at the diverge)</span>
+<span class="keyword">for</span> t=totT/2:totT
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+    TF{15,t} = [0.25 0.75;
+                 1    0 ];
+<span class="keyword">end</span>
+clear <span class="string">t</span>;
+</pre><h2>initilize the Destination Based Split rates<a name="7"></a></h2><p>During a multi commodity network loading path based flows or destination based flows are tracked explicitly (as cumulative vehicle numbers in  the link transmission model). The turing rates at a diverge are thus computed at run time and consistent with the demand pattern without iterations. Because there is no route choice in this network all destination based turning fractions are either zero or one.</p><pre class="codeinput">TF_d = num2cell(ones(size(nodes.id,1),totT,length(destinations)));
+<span class="keyword">for</span> t=1:totT
+    d=1;
+    TF_d{10,t,d} = ones(2,1);
+    TF_d{25,t,d} = ones(2,1);
+    TF_d{15,t,d} = [1   0;
+                    1   0 ];
+
+    d=2;
+    TF_d{10,t,d} = ones(2,1);
+    TF_d{25,t,d} = ones(2,1);
+    TF_d{15,t,d} = [0    1;
+                    0    1 ];
+<span class="keyword">end</span>
+clear <span class="string">t</span>;
+</pre><h2>Compute the single-commodity Dynamic Network Loading<a name="8"></a></h2><p>First the single-commodity link transmission model is used to propagate the traffic over the network. No iterations are performed to take into account delays for setting consistent splitting rates.</p><pre class="codeinput">display(<span class="string">'Running LTM single-commodity'</span>)
+
+<span class="comment">%run LTM</span>
+tic
+[cvn_up,cvn_down] = LTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+</pre><pre class="codeoutput">Running LTM single-commodity
+Elapsed time is 4.658685 seconds.
+</pre><h2>Compute a multi-commodity Dynamic Network Loading<a name="9"></a></h2><p>Now the multi-commodity link transmission model is used to propagate the traffic over the network. Computation times are higher because of the additional bookkeeping of the destination based cumulative vehicle numbers.</p><pre class="codeinput">display(<span class="string">'Running LTM multi-commodity'</span>)
+
+<span class="comment">%run LTM</span>
+tic
+[cvn_up_d,cvn_down_d] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF_d);
+toc
+</pre><pre class="codeoutput">Running LTM multi-commodity
+Elapsed time is 6.098091 seconds.
+</pre><h2>Visualize the resulting densities using XT diagrams<a name="10"></a></h2><p>Resulting densities and flows are depicted for both approaches in space-time (or XT) diagrams of both the main road and the crossing road. Note that this requires summing over all destination based cumulative vehicle numbers for the multi-commodity approach.</p><pre class="codeinput"><span class="comment">%compute the simulated densities &amp; flows</span>
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(cvn_down,dt);
+
+<span class="comment">%compute the simulated densities &amp; flows for the destination based</span>
+[simDensity_d] = cvn2dens(sum(cvn_up_d,3),sum(cvn_down_d,3),totT,links);
+[simFlows_down_d] = cvn2flows(sum(cvn_down_d,3),dt);
+
+<span class="comment">%Main road</span>
+plotXT(links,1:27,simDensity,dt,totT);
+title(<span class="string">'XT-graph of densities (on main road): SC-LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+plotXT(links,1:27,simDensity_d,dt,totT);
+title(<span class="string">'XT-graph of densities (on main road): MC-LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+
+<span class="comment">%Crossing road</span>
+plotXT(links,[33:-1:31,28:30],simDensity,dt,totT);
+title(<span class="string">'XT-graph of densities (on crossing road): SC-LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+plotXT(links,[33:-1:31,28:30],simDensity_d,dt,totT);
+title(<span class="string">'XT-graph of densities (on crossing road): MC-LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial5_04.png" alt=""> <img vspace="5" hspace="5" src="tutorial5_05.png" alt=""> <img vspace="5" hspace="5" src="tutorial5_06.png" alt=""> <img vspace="5" hspace="5" src="tutorial5_07.png" alt=""> <h2>Compute the maximum difference between both solutions<a name="11"></a></h2><p>The following lines of code compare the output of both models in terms of difference in density and amount of vehicles that end up at the wrong destinations.</p><pre class="codeinput">fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Comparing SC &amp; MC'</span>)
+display([<span class="string">'- maximum difference: '</span>,num2str(max(max(abs(simDensity-simDensity_d)))),<span class="string">' veh/km'</span>]);
+display([<span class="string">'- average difference: '</span>,num2str(sum(sum(abs(simDensity-simDensity_d)))/sum(sum(simDensity))),<span class="string">' veh/km'</span>]);
+display([<span class="string">'- vehicles departed for D=31: '</span>,num2str(sum(sum(ODmatrix(:,2,:)*dt)))]);
+display([<span class="string">'- vehicles arrived in SC simulation at D=31: '</span>,num2str(cvn_down(30,end))]);
+display([<span class="string">'- vehicles arrived in MC simulation at D=31: '</span>,num2str(sum(cvn_down_d(30,end,:)))]);
+</pre><pre class="codeoutput">
+Comparing SC &amp; MC
+- maximum difference: 254.6575 veh/km
+- average difference: 0.1559 veh/km
+- vehicles departed for D=31: 2062.5
+- vehicles arrived in SC simulation at D=31: 2622.7381
+- vehicles arrived in MC simulation at D=31: 2062.5
+</pre><h2>Closing notes<a name="12"></a></h2><div><ul><li>In the MC assingment all traffic ends up at the corresponding destinations. However there is a smoothed response where a crisp change is expected. This is a result of the computation of the split rates which is based on the sending flow. An exact scheme is defined by split rates based on the actual transfered flow (found through iterations or incremental loading).</li></ul></div><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Tutorial 5: Comparing single commodity (SC) & multi commodity (MC)
+
+%% Disclaimer
+% This file is part of the matlab package for dynamic traffic assignments 
+% developed by the KULeuven. 
+%
+% Copyright (C) 2016  Himpe Willem, Leuven, Belgium
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% any later version.
+% 
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%
+% More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
+% or contact: willem.himpe {@} kuleuven.be
+
+%% Introduction
+% This tutorial compares a single commodity (SC) dynamic network loading 
+% with a multi commodity (MC) dynamic network loading. In both cases the 
+% link transmission model is used to propagate the traffic over the 
+% network. In a SC dynamic network loading exogenously defined turning 
+% rates are defined to guide the traffic (that is modelled as a single 
+% stream) from origins to destinations. The turning rates have to be set 
+% such that the demand is distributed consistenly from each origin towards 
+% each destination.This requires taking into account delays in the network. 
+% If this is not modelled accurately some flows might reach a wrong 
+% destination. In a MC dynamic network loading this problem is solved by 
+% explicitly modelling route specific flows or destination bound flows. 
+% However this requires storing more information in memory.
+%
+
+%add these folders to the search path
+addpath('Dynamic Traffic Assignment','Visualization Tools','Network Data')
+%clear the work space
+clear
+%clear the command window
+clc
+%close all windows
+close all
+
+display('<<<Comparing single commodity (SC) & multi commodity (MC)>>>')
+
+%% Loading the data
+% The network represents a two-lane road with vehicles moving from right 
+% to left. There are two on-ramps feeding additional traffic into the 
+% system and one crossing road (moving from below to the top).
+% The demand pattern is chosen such that the most downstream
+% merge forms a temporary bottleneck and congestion spills back over the
+% node. 
+%
+
+% Network and demand data
+load net4.mat
+
+% Plot the network
+plotNetwork(nodes,links,true,[]);
+
+%% Setup the simulation
+% Before the simulation can be run the time interval has to be set and the
+% total number of time steps has to be defined. These are used to transform
+% the different origin-destination (OD-) matrices into a 3D-matrix. The
+% time interval is bound by CFL-conditions. It can not be larger then the
+% minimal travel time of the fastest kinematic wave in the network.
+%
+
+%setup the time interval and total number of time steps
+dt = min(links.length./links.freeSpeed);
+totT = round(2/dt);
+
+%build the full ODmatrix
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+%% Visualize the demand in the network
+% The demand between every origin-destination combination is plotted for
+% each time interval of the simulation.
+%
+
+figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,1,:),1,[]),'d-b',dt*[0:totT-1],reshape(ODmatrix(2,1,:),1,[]),'.-r',dt*[0:totT-1],reshape(ODmatrix(3,1,:),1,[]),'.-m',dt*[0:totT-1],reshape(ODmatrix(4,1,:),1,[]),'x-g')
+legend('OD 1-28','OD 34-28','OD 37-28','OD 40-28')
+xlabel('time (h)')
+ylabel('flow (veh/h)')
+
+figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,2,:),1,[]),'d-b',dt*[0:totT-1],reshape(ODmatrix(3,2,:),1,[]),'.-r',dt*[0:totT-1],reshape(ODmatrix(2,2,:),1,[]),'x-g')
+legend('OD 1-31','OD 37-31','OD 34-31')
+xlabel('time (h)')
+ylabel('flow (veh/h)')
+
+%% initilize the global turning fractions
+% The global turning fractions for a single commodity network loading have 
+% to be defined for each time interval. The demand pattern describes that 
+% 25% of traffic on the main road makes a right turn at the intersection 
+% during the first half of the simulation while 75% of traffic on the main 
+% road makes this turn during the second half of the simulation. However 
+% because of delays on the main road the actual change in split will not 
+% take place half way the simulation but later. A consistent solution can 
+% only be found by iterating the dynamic network loading and the 
+% computation of the splitting rates taking into account the delays of the 
+% last loading. A fraction (25%) of the vehicles on the main road make a 
+% right turn at the crossing road. The turning fractions have to be defined 
+% for each time interval. They are stored in a cell array where each cell 
+% represents the turns in matrix with size [#incoming links, 
+% #outgoing links].
+%
+
+TF = num2cell(ones(size(nodes.id,1),totT));
+for t=1:totT/2
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+    TF{15,t} = [0.75 0.25;
+                 1    0 ];
+end
+
+%To account for change in OD flow (departed at time = 0.9375 and arriving in free flow at totT/2 at the diverge) 
+for t=totT/2:totT
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+    TF{15,t} = [0.25 0.75;
+                 1    0 ];
+end
+clear t;
+
+%% initilize the Destination Based Split rates
+% During a multi commodity network loading path based flows or destination
+% based flows are tracked explicitly (as cumulative vehicle numbers in  the 
+% link transmission model). The turing rates at a diverge are thus computed
+% at run time and consistent with the demand pattern without iterations.
+% Because there is no route choice in this network all destination based
+% turning fractions are either zero or one. 
+%
+
+TF_d = num2cell(ones(size(nodes.id,1),totT,length(destinations)));
+for t=1:totT
+    d=1;
+    TF_d{10,t,d} = ones(2,1);
+    TF_d{25,t,d} = ones(2,1);
+    TF_d{15,t,d} = [1   0;
+                    1   0 ];
+    
+    d=2;
+    TF_d{10,t,d} = ones(2,1);
+    TF_d{25,t,d} = ones(2,1);
+    TF_d{15,t,d} = [0    1;
+                    0    1 ];
+end
+clear t;
+
+
+%% Compute the single-commodity Dynamic Network Loading
+% First the single-commodity link transmission model is used to propagate 
+% the traffic over the network. No iterations are performed to take into
+% account delays for setting consistent splitting rates.
+%
+
+display('Running LTM single-commodity')
+
+%run LTM
+tic
+[cvn_up,cvn_down] = LTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+
+%% Compute a multi-commodity Dynamic Network Loading 
+% Now the multi-commodity link transmission model is used to propagate 
+% the traffic over the network. Computation times are higher because of the
+% additional bookkeeping of the destination based cumulative vehicle
+% numbers.
+%
+
+display('Running LTM multi-commodity')
+
+%run LTM
+tic
+[cvn_up_d,cvn_down_d] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF_d);
+toc
+
+%% Visualize the resulting densities using XT diagrams
+% Resulting densities and flows are depicted for both approaches in 
+% space-time (or XT) diagrams of both the main road and the crossing road.
+% Note that this requires summing over all destination based cumulative 
+% vehicle numbers for the multi-commodity approach.
+%
+
+%compute the simulated densities & flows
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(cvn_down,dt);
+
+%compute the simulated densities & flows for the destination based
+[simDensity_d] = cvn2dens(sum(cvn_up_d,3),sum(cvn_down_d,3),totT,links);
+[simFlows_down_d] = cvn2flows(sum(cvn_down_d,3),dt);
+
+%Main road
+plotXT(links,1:27,simDensity,dt,totT);
+title('XT-graph of densities (on main road): SC-LTM','FontSize',14,'fontweight','b')
+plotXT(links,1:27,simDensity_d,dt,totT);
+title('XT-graph of densities (on main road): MC-LTM','FontSize',14,'fontweight','b')
+
+%Crossing road
+plotXT(links,[33:-1:31,28:30],simDensity,dt,totT);
+title('XT-graph of densities (on crossing road): SC-LTM','FontSize',14,'fontweight','b')
+plotXT(links,[33:-1:31,28:30],simDensity_d,dt,totT);
+title('XT-graph of densities (on crossing road): MC-LTM','FontSize',14,'fontweight','b')
+
+%% Compute the maximum difference between both solutions
+% The following lines of code compare the output of both models in terms of
+% difference in density and amount of vehicles that end up at the wrong
+% destinations.
+%
+
+fprintf(1,'\n');
+display('Comparing SC & MC')
+display(['- maximum difference: ',num2str(max(max(abs(simDensity-simDensity_d)))),' veh/km']);
+display(['- average difference: ',num2str(sum(sum(abs(simDensity-simDensity_d)))/sum(sum(simDensity))),' veh/km']);
+display(['- vehicles departed for D=31: ',num2str(sum(sum(ODmatrix(:,2,:)*dt)))]);
+display(['- vehicles arrived in SC simulation at D=31: ',num2str(cvn_down(30,end))]);
+display(['- vehicles arrived in MC simulation at D=31: ',num2str(sum(cvn_down_d(30,end,:)))]);
+
+%% Closing notes
+%
+% * In the MC assingment all traffic ends up at the corresponding 
+% destinations. However there is a smoothed response where a crisp change 
+% is expected. This is a result of the computation of the split rates which 
+% is based on the sending flow. An exact scheme is defined by split rates
+% based on the actual transfered flow (found through iterations or
+% incremental loading).
+% 
+##### SOURCE END #####
+--></body></html>

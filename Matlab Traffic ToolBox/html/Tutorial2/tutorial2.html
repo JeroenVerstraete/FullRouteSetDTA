@@ -1,0 +1,323 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Tutorial 2: Introducing the Link Transmission Model (LTM)</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-06-25"><meta name="DC.source" content="tutorial2.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Tutorial 2: Introducing the Link Transmission Model (LTM)</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Disclaimer</a></li><li><a href="#2">Introduction</a></li><li><a href="#3">Loading the data</a></li><li><a href="#4">Setup the simulation</a></li><li><a href="#5">Visualize the demand in the network</a></li><li><a href="#6">Compute the single-commodity Dynamic Network Loading</a></li><li><a href="#7">Visualize the resulting densities and flows using XT diagrams</a></li><li><a href="#8">Transform CVN values to travel times</a></li><li><a href="#9">Make an animation of the result</a></li><li><a href="#10">Closing notes</a></li></ul></div><h2>Disclaimer<a name="1"></a></h2><p>This file is part of the matlab package for dynamic traffic assignments developed by the KULeuven.</p><p>Copyright (C) 2016  Himpe Willem, Leuven, Belgium</p><p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p><p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p><p>More information at: <a href="http://www.mech.kuleuven.be/en/cib/traffic/downloads">http://www.mech.kuleuven.be/en/cib/traffic/downloads</a> or contact: willem.himpe {@} kuleuven.be</p><h2>Introduction<a name="2"></a></h2><p>This tutorial introduces a basic implementation of the link transmission model. This module propagates traffic over a network guided by predefined turning fractions (or splitting rates) at nodes. Congestion and spillback is modelled with three different queuing principles. The standard queuing approach (most realistic for traffic modelling) is based on first-order kinematic wave theory and a triangular fundamental diagram. Implemented alternatives are vertical queueing and horizontal queueing.</p><pre class="codeinput"><span class="comment">%add these folders to the search path</span>
+addpath(<span class="string">'Dynamic Traffic Assignment'</span>,<span class="string">'Visualization Tools'</span>,<span class="string">'Network Data'</span>)
+<span class="comment">%clear the work space</span>
+clear
+<span class="comment">%clear the command window</span>
+clc
+<span class="comment">%close all windows</span>
+close <span class="string">all</span>
+
+display(<span class="string">'&lt;&lt;&lt;Introducing the Link Transmission Model (LTM)&gt;&gt;&gt;'</span>)
+</pre><pre class="codeoutput">&lt;&lt;&lt;Introducing the Link Transmission Model (LTM)&gt;&gt;&gt;
+</pre><h2>Loading the data<a name="3"></a></h2><p>The network represents a two-lane highway with vehicles moving from right to left. There are two on-ramps feeding additional traffic into the system. The demand pattern is chosen such that the most downstream merge forms a temporary bottleneck.</p><pre class="codeinput"><span class="comment">% Network and demand data</span>
+load <span class="string">net1.mat</span>
+
+<span class="comment">% Plot the network</span>
+plotNetwork(nodes,links,true,[]);
+</pre><img vspace="5" hspace="5" src="tutorial2_01.png" alt=""> <h2>Setup the simulation<a name="4"></a></h2><p>Before the simulation can be run the time interval has to be set and the total number of time steps has to be defined. These are used to transform the different origin-destination (OD-) matrices into a 3D-matrix. The OD matrices represent stationary demand rates inbetween the time tics defined in the timeSeries variable. This makes it easy to adjust the time interval (dt) of the simulation and update the input ODmatrix by rerunning this section. The turning fractions have to be defined for each time interval. They are stored in a cell array where each cell represents the turns in matrix with size [#incoming links, #outgoing links]. All turning fractions are equal to one because no diverges are present in this network.</p><pre class="codeinput"><span class="comment">%setup the time interval and total number of time steps</span>
+dt = 0.002;
+totT = 2/dt;
+
+<span class="comment">%build the full ODmatrix</span>
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+<span class="comment">%initilize the Turning Fractions</span>
+TF = num2cell(ones(size(nodes.id,1),totT));
+<span class="keyword">for</span> t=1:totT
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+<span class="keyword">end</span>
+clear <span class="string">t</span>;
+</pre><h2>Visualize the demand in the network<a name="5"></a></h2><p>The demand between every origin-destination combination is plotted for each time interval of the simulation.</p><pre class="codeinput">figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,1,:),1,[]),<span class="string">'d-b'</span>,dt*[0:totT-1],reshape(ODmatrix(2,1,:),1,[]),<span class="string">'.-r'</span>,dt*[0:totT-1],reshape(ODmatrix(3,1,:),1,[]),<span class="string">'x-g'</span>)
+legend(<span class="string">'OD 1-28'</span>,<span class="string">'OD 31-28'</span>,<span class="string">'OD 34-28'</span>)
+xlabel(<span class="string">'time (h)'</span>)
+ylabel(<span class="string">'flow (veh/h)'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial2_02.png" alt=""> <h2>Compute the single-commodity Dynamic Network Loading<a name="6"></a></h2><p>The link transmission model propagates the traffic in the simulation. It is composed of link model and node model which are both consistent with first-order traffic flow theory with a triangular fundamental diagram. For each link it is therefor required to define free-flow speed, capacity and jam density. In hypercritical traffic states this results in delays that are function of the density of vehicles. Alternatively it is also possible to simulate vertical queues that do not propagate upstream or horizontal queues that characterized by a single density for all hypercritical states. In this implementation the queue principle is set identical for all links in the network by suppling a 2-character string to the LTM_SC function:</p><div><ul><li>PQ: physical queue (standard)</li><li>VQ: vertical queue</li><li>HQ: horizontal queue</li></ul></div><p>Within the LTM_SC function the <b>sending flow</b> (representing the demand towards a node) and the <b>receiving flow</b> (representing the maximum number of vehicles alowed to propagate into a link) are evaluated for every node in each time interval. The nested functions that compute them are found at the end of the script. The node model governs the transfer of flow over a node and is included as a seperate function.</p><pre class="codeinput">display(<span class="string">'Running LTM'</span>)
+
+<span class="comment">%link model</span>
+mode = <span class="string">'PQ'</span>;
+<span class="comment">%PQ: physical queue (standard)</span>
+<span class="comment">%VQ: vertical queue</span>
+<span class="comment">%HQ: horizontal queue</span>
+
+<span class="comment">%run LTM</span>
+tic
+[cvn_up,cvn_down] = LTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF,mode);
+toc
+</pre><pre class="codeoutput">Running LTM
+Elapsed time is 11.120029 seconds.
+</pre><h2>Visualize the resulting densities and flows using XT diagrams<a name="7"></a></h2><p>The result of the link transmission model is expressed in cumulative vehicle numbers (CVN) for every links upstream and downstream end over the time domain. Flows and densities are computed in post processing phase as time and space derivates of these CVN functions. Density and flow are depicted in space-time (or XT) diagrams of the main road.</p><pre class="codeinput"><span class="comment">%compute the simulated densities &amp; flows</span>
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(sum(cvn_down,3),dt);
+
+<span class="comment">%Main road</span>
+plotXT(links,1:27,simDensity,dt,totT);
+title(<span class="string">'XT-graph of densities on the main road: LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+plotXT(links,1:27,simFlows_down,dt,totT-1);
+title(<span class="string">'XT-graph of downstream flows on the main road: LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial2_03.png" alt=""> <img vspace="5" hspace="5" src="tutorial2_04.png" alt=""> <h2>Transform CVN values to travel times<a name="8"></a></h2><p>The upstream and dowsntream CVN functions are transformed into travel times for every link in the network. This requires computing the time window between the occurence of a specific vehicle number on upstream and downstream end of the link.</p><pre class="codeinput"><span class="comment">%calculate the simulated travel times</span>
+[simTT] = cvn2tt(cvn_up,cvn_down,dt,totT,links);
+
+<span class="comment">%visualize the travel time along the main route (from split to merge)</span>
+[~,~,~,tt]=plotTT(links,1:27,simTT,dt,totT);
+</pre><img vspace="5" hspace="5" src="tutorial2_05.png" alt=""> <h2>Make an animation of the result<a name="9"></a></h2><p>The variation of densities is animated in the network by considering only every 10th simulation interval.</p><pre class="codeinput"><span class="comment">% fRate = 20; %set frame rate</span>
+fRate = inf; <span class="comment">%allows the for manual control using space bar</span>
+animateSimulation(nodes,links,simDensity(:,1:10:end),dt*[0:10:totT],fRate); <span class="comment">%only shows every 10th frame</span>
+</pre><pre class="codeoutput">press space bar to continue
+</pre><img vspace="5" hspace="5" src="tutorial2_06.png" alt=""> <h2>Closing notes<a name="10"></a></h2><div><ul><li>The network is deliberatly chosen to be very detailed. This is done for visualizing the results more accuratly. In tutorial 4 a coarser network is presented with the same layout.</li><li>To compare the queuing principles it is required to rerun the script while the mode parameter is adjusted.</li></ul></div><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Tutorial 2: Introducing the Link Transmission Model (LTM)
+
+%% Disclaimer
+% This file is part of the matlab package for dynamic traffic assignments 
+% developed by the KULeuven. 
+%
+% Copyright (C) 2016  Himpe Willem, Leuven, Belgium
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% any later version.
+% 
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%
+% More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
+% or contact: willem.himpe {@} kuleuven.be
+
+%% Introduction
+% This tutorial introduces a basic implementation of the link transmission 
+% model. This module propagates traffic over a network guided by predefined
+% turning fractions (or splitting rates) at nodes. Congestion and spillback
+% is modelled with three different queuing principles. The standard queuing
+% approach (most realistic for traffic modelling) is based on first-order 
+% kinematic wave theory and a triangular fundamental diagram. Implemented 
+% alternatives are vertical queueing and horizontal queueing. 
+%
+
+%add these folders to the search path
+addpath('Dynamic Traffic Assignment','Visualization Tools','Network Data')
+%clear the work space
+clear
+%clear the command window
+clc
+%close all windows
+close all
+
+display('<<<Introducing the Link Transmission Model (LTM)>>>')
+
+%% Loading the data
+% The network represents a two-lane highway with vehicles moving from right 
+% to left. There are two on-ramps feeding additional traffic into the 
+% system. The demand pattern is chosen such that the most downstream
+% merge forms a temporary bottleneck.
+%
+
+% Network and demand data
+load net1.mat
+
+% Plot the network
+plotNetwork(nodes,links,true,[]);
+
+%% Setup the simulation
+% Before the simulation can be run the time interval has to be set and the
+% total number of time steps has to be defined. These are used to transform
+% the different origin-destination (OD-) matrices into a 3D-matrix. The OD
+% matrices represent stationary demand rates inbetween the time tics
+% defined in the timeSeries variable. This makes it easy to adjust the time
+% interval (dt) of the simulation and update the input ODmatrix by 
+% rerunning this section. The turning fractions have to be defined for each 
+% time interval. They are stored in a cell array where each cell represents
+% the turns in matrix with size [#incoming links, #outgoing links]. All 
+% turning fractions are equal to one because no diverges are present in 
+% this network.
+%
+
+%setup the time interval and total number of time steps
+dt = 0.002;
+totT = 2/dt;
+
+%build the full ODmatrix
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+%initilize the Turning Fractions
+TF = num2cell(ones(size(nodes.id,1),totT));
+for t=1:totT
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+end
+clear t;
+
+%% Visualize the demand in the network
+% The demand between every origin-destination combination is plotted for
+% each time interval of the simulation.
+%
+
+figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,1,:),1,[]),'d-b',dt*[0:totT-1],reshape(ODmatrix(2,1,:),1,[]),'.-r',dt*[0:totT-1],reshape(ODmatrix(3,1,:),1,[]),'x-g')
+legend('OD 1-28','OD 31-28','OD 34-28')
+xlabel('time (h)')
+ylabel('flow (veh/h)')
+
+%% Compute the single-commodity Dynamic Network Loading
+% The link transmission model propagates the traffic in the simulation. It
+% is composed of link model and node model which are both consistent with 
+% first-order traffic flow theory with a triangular fundamental diagram.
+% For each link it is therefor required to define free-flow speed, capacity
+% and jam density. In hypercritical traffic states this results in delays
+% that are function of the density of vehicles. Alternatively it is also
+% possible to simulate vertical queues that do not propagate upstream or
+% horizontal queues that characterized by a single density for all 
+% hypercritical states. In this implementation the queue principle is set 
+% identical for all links in the network by suppling a 2-character string
+% to the LTM_SC function:
+%
+% * PQ: physical queue (standard)
+% * VQ: vertical queue
+% * HQ: horizontal queue
+%
+% Within the LTM_SC function the *sending flow* (representing the demand
+% towards a node) and the *receiving flow* (representing the maximum 
+% number of vehicles alowed to propagate into a link) are evaluated for 
+% every node in each time interval. The nested functions that compute them 
+% are found at the end of the script. The node model governs the transfer 
+% of flow over a node and is included as a seperate function.
+%
+
+display('Running LTM')
+
+%link model
+mode = 'PQ'; 
+%PQ: physical queue (standard)
+%VQ: vertical queue
+%HQ: horizontal queue
+
+%run LTM
+tic
+[cvn_up,cvn_down] = LTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF,mode);
+toc
+
+%% Visualize the resulting densities and flows using XT diagrams
+% The result of the link transmission model is expressed in cumulative 
+% vehicle numbers (CVN) for every links upstream and downstream end over 
+% the time domain. Flows and densities are computed in post processing 
+% phase as time and space derivates of these CVN functions. Density and 
+% flow are depicted in space-time (or XT) diagrams of the main road.
+%
+
+%compute the simulated densities & flows
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(sum(cvn_down,3),dt);
+
+%Main road
+plotXT(links,1:27,simDensity,dt,totT);
+title('XT-graph of densities on the main road: LTM','FontSize',14,'fontweight','b')
+plotXT(links,1:27,simFlows_down,dt,totT-1);
+title('XT-graph of downstream flows on the main road: LTM','FontSize',14,'fontweight','b')
+
+%% Transform CVN values to travel times
+% The upstream and dowsntream CVN functions are transformed into travel 
+% times for every link in the network. This requires computing the time 
+% window between the occurence of a specific vehicle number on upstream and
+% downstream end of the link.
+%
+
+%calculate the simulated travel times
+[simTT] = cvn2tt(cvn_up,cvn_down,dt,totT,links);
+
+%visualize the travel time along the main route (from split to merge)
+[~,~,~,tt]=plotTT(links,1:27,simTT,dt,totT);
+
+%% Make an animation of the result
+% The variation of densities is animated in the network by considering only 
+% every 10th simulation interval.
+%
+
+% fRate = 20; %set frame rate
+fRate = inf; %allows the for manual control using space bar
+animateSimulation(nodes,links,simDensity(:,1:10:end),dt*[0:10:totT],fRate); %only shows every 10th frame
+
+%% Closing notes
+%
+% * The network is deliberatly chosen to be very detailed. This is done for
+% visualizing the results more accuratly. In tutorial 4 a coarser network
+% is presented with the same layout.
+% * To compare the queuing principles it is required to rerun the script
+% while the mode parameter is adjusted.
+% 
+##### SOURCE END #####
+--></body></html>

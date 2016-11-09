@@ -12,26 +12,26 @@ function [cvn_up,cvn_down,con_up,con_down] = ILTM_v4(nodes,links,origins,destina
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %make data link and data node work
-totLinks=length(links.startNodes);
-totNodes=length(nodes.nbIncomingLinks);
+totLinks=length(links.fromNode);
+totNodes=length(nodes.x);
 totDestinations=length(destinations);
 
 %initialization for ILTM
 if ~isfield(links,'vf_index')
-    links.vf_index = floor((links.lengths./links.freeSpeeds)/timeInterval);
-    links.vf_ratio = links.vf_index-(links.lengths./links.freeSpeeds)/timeInterval+1;
+    links.vf_index = floor((links.length./links.freeSpeed)/timeInterval);
+    links.vf_ratio = links.vf_index-(links.length./links.freeSpeed)/timeInterval+1;
     links.vf_index = -links.vf_index-1;
-    links.vw_index = floor((-links.lengths./links.ws)/timeInterval);
-    links.vw_ratio = links.vw_index-(-links.lengths./links.ws)/timeInterval+1;
+    links.vw_index = floor((-links.length./links.ws)/timeInterval);
+    links.vw_ratio = links.vw_index-(-links.length./links.ws)/timeInterval+1;
     links.vw_index = -links.vw_index-1;
 end
 
 %local rename link properties
-strN = links.startNodes;
-endN = links.endNodes;
-cap = links.capacities;
-kJm = links.kJams;
-len = links.lengths;
+strN = links.fromNode;
+endN = links.toNode;
+cap = links.capacity;
+kJm = links.kJam;
+len = links.length;
 vind=links.vf_index;
 vRt=links.vf_ratio;
 wind=links.vw_index;

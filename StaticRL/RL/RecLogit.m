@@ -19,7 +19,6 @@ end
     
 TT=connectionMatrix.*repmat(travelCosts,size(connectionMatrix,1),1);
 v = beta_tt*TT+beta_Ut*UTurn+beta_hierarchy*levelsDown;
-% v=abs(v);
 
 % Cost from link you are going on to!
 

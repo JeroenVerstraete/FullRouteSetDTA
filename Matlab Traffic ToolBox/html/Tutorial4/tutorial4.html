@@ -1,0 +1,545 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Tutorial 4: Comparing LTM &amp; CTM</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-06-25"><meta name="DC.source" content="tutorial4.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Tutorial 4: Comparing LTM &amp; CTM</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Disclaimer</a></li><li><a href="#2">Introduction</a></li><li><a href="#3">Loading the data</a></li><li><a href="#4">Setup the simulation</a></li><li><a href="#5">Visualize the demand in the network</a></li><li><a href="#6">Compute the single-commodity Dynamic Network Loading</a></li><li><a href="#7">Visualize the resulting densities and flows using XT diagrams</a></li><li><a href="#8">Transform CVN values to travel times</a></li><li><a href="#9">Compute the difference between both solutions</a></li><li><a href="#10">Alternative coarser network coding for the LTM</a></li><li><a href="#11">Setup the simulation</a></li><li><a href="#12">Compute the single-commodity Dynamic Network Loading</a></li><li><a href="#13">Visualize the resulting densities and flows using XT diagrams</a></li><li><a href="#14">Transform CVN values to travel times</a></li><li><a href="#15">Compute the maximum difference between both solutions</a></li><li><a href="#16">Closing notes</a></li></ul></div><h2>Disclaimer<a name="1"></a></h2><p>This file is part of the matlab package for dynamic traffic assignments developed by the KULeuven.</p><p>Copyright (C) 2016  Himpe Willem, Leuven, Belgium</p><p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p><p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p><p>More information at: <a href="http://www.mech.kuleuven.be/en/cib/traffic/downloads">http://www.mech.kuleuven.be/en/cib/traffic/downloads</a> or contact: willem.himpe {@} kuleuven.be</p><h2>Introduction<a name="2"></a></h2><p>This tutorial illustrates the differences and similarities between the Link Transmission Model (LTM) and the Cell Transmission Model (CTM). The largest difference between both model are the solution variables. The LTM is formulated in terms of cumulative vehicle numbers at both link ends, while the CTM is formulated in terms of the density in each cell and the flow rates over the cell boundaries. Both models are first compared on a spatial grid of similar size. However, the LTM is able to consider a much larger spatial discretization without sacrificing numerical precision. On the contrary, the results are more precise for the same time step size.</p><pre class="codeinput"><span class="comment">%add these folders to the search path</span>
+addpath(<span class="string">'Dynamic Traffic Assignment'</span>,<span class="string">'Visualization Tools'</span>,<span class="string">'Network Data'</span>)
+<span class="comment">%clear the work space</span>
+clear
+<span class="comment">%clear the command window</span>
+clc
+<span class="comment">%close all windows</span>
+close <span class="string">all</span>
+
+display(<span class="string">'&lt;&lt;&lt;Comparing LTM &amp; CTM&gt;&gt;&gt;'</span>)
+</pre><pre class="codeoutput">&lt;&lt;&lt;Comparing LTM &amp; CTM&gt;&gt;&gt;
+</pre><h2>Loading the data<a name="3"></a></h2><p>The network represents a two-lane highway with vehicles moving from right to left. There are two on-ramps feeding additional traffic into the system. The demand pattern is chosen such that the most downstream merge forms a temporary bottleneck.</p><pre class="codeinput"><span class="comment">% Network and demand data</span>
+load <span class="string">net1.mat</span>
+
+<span class="comment">% Plot the network</span>
+plotNetwork(nodes,links,true,[]);
+</pre><img vspace="5" hspace="5" src="tutorial4_01.png" alt=""> <h2>Setup the simulation<a name="4"></a></h2><p>Before the simulation can be run the time interval has to be set and the total number of time steps has to be defined. These are used to transform the different origin-destination (OD-) matrices into a 3D-matrix. The time interval is bound by CFL-conditions. It can not be larger then the minimal travel time of the fastest kinematic wave in the network. The turning fractions have to be defined for each time interval. They are all equal to one because no diverges are present in this network.</p><pre class="codeinput"><span class="comment">%setup the maximal time interval and total number of time steps</span>
+dt = min(links.length./links.freeSpeed);
+totT = 2/dt;
+
+<span class="comment">%build the full ODmatrix</span>
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+<span class="comment">%initilize the Turning Fractions (easy if no diverges in the network)</span>
+TF = num2cell(ones(size(nodes.id,1),totT));
+<span class="keyword">for</span> t=1:totT
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+<span class="keyword">end</span>
+clear <span class="string">t</span>;
+</pre><h2>Visualize the demand in the network<a name="5"></a></h2><p>The demand between every origin-destination combination is plotted for each time interval of the simulation.</p><pre class="codeinput">figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,1,:),1,[]),<span class="string">'d-b'</span>,dt*[0:totT-1],reshape(ODmatrix(2,1,:),1,[]),<span class="string">'.-r'</span>,dt*[0:totT-1],reshape(ODmatrix(3,1,:),1,[]),<span class="string">'x-g'</span>)
+legend(<span class="string">'OD 1-28'</span>,<span class="string">'OD 31-28'</span>,<span class="string">'OD 34-28'</span>)
+xlabel(<span class="string">'time (h)'</span>)
+ylabel(<span class="string">'flow (veh/h)'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial4_02.png" alt=""> <h2>Compute the single-commodity Dynamic Network Loading<a name="6"></a></h2><p>First the link transmission model is used to propagate the traffic over the network. Next the cell transmission model is used. Both models are composed of a link model and a node model which are consistent with first-order traffic flow theory with a triangular fundamental diagram. The node model is exactly the same for both models. The largest difference between both model are the solution variables. The LTM is formulated in terms of cumulative vehicle numbers at both link ends, while the CTM is formulated in terms of density in  each cell and the flow rates over the cell boundaries.</p><pre class="codeinput">display(<span class="string">'Running LTM single-commodity on a detailed network'</span>)
+
+<span class="comment">%run LTM</span>
+tic
+[cvn_up,cvn_down] = LTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+
+display(<span class="string">'Running CTM single-commodity'</span>)
+
+<span class="comment">%run CTM</span>
+tic
+[flows_up,flows_down,dens_n] = CTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+</pre><pre class="codeoutput">Running LTM single-commodity on a detailed network
+Elapsed time is 5.101053 seconds.
+Running CTM single-commodity
+Elapsed time is 3.169199 seconds.
+</pre><h2>Visualize the resulting densities and flows using XT diagrams<a name="7"></a></h2><p>The result of the link transmission model is expressed in cumulative vehicle numbers (CVN) for every links upstream and downstream end over the time domain. Flows and densities are computed in post processing phase as time and space derivates of these CVN functions. For the cell transmission model density and flow. Resulting densities and flows are depicted for both models in space-time (or XT) diagrams of the main road.</p><pre class="codeinput"><span class="comment">%Compute the simulated densities &amp; flows for LTM</span>
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(sum(cvn_down,3),dt);
+
+<span class="comment">%Density allong the main road for LTM &amp; CTM</span>
+plotXT(links,1:27,simDensity,dt,totT);
+title(<span class="string">'XT-graph of densities: LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+plotXT(links,1:27,dens_n,dt,totT);
+title(<span class="string">'XT-graph of densities: CTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+
+<span class="comment">%Flow allong the main road for LTM &amp; CTM</span>
+plotXT(links,1:27,simFlows_down,dt,totT-1);
+title(<span class="string">'XT-graph of flows: LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+plotXT(links,1:27,flows_down,dt,totT);
+title(<span class="string">'XT-graph of flows: CTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial4_03.png" alt=""> <img vspace="5" hspace="5" src="tutorial4_04.png" alt=""> <img vspace="5" hspace="5" src="tutorial4_05.png" alt=""> <img vspace="5" hspace="5" src="tutorial4_06.png" alt=""> <h2>Transform CVN values to travel times<a name="8"></a></h2><p>The upstream and dowsntream CVN functions of the link transmission model are transformed into travel times for every link in the network. This is compared to the travel time based on the density in each cell of the cell transmission model.</p><pre class="codeinput"><span class="comment">%calculate the simulated travel times for LTM &amp; CTM</span>
+[simTT] = cvn2tt(cvn_up,cvn_down,dt,totT,links);
+[simTT_c] = dens2tt(dens_n,totT,links);
+
+<span class="comment">%visualize the travel time along the main route</span>
+[~,~,~,tt]=plotTT(links,1:27,simTT,dt,totT);
+title(<span class="string">'Travel time graph: LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+[~,~,~,tt_c]=plotTT(links,1:27,simTT_c,dt,totT);
+title(<span class="string">'Travel time graph: CTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+
+<span class="comment">%compare both travel times</span>
+figure;
+plot(dt*[0:totT],tt,<span class="string">'b'</span>,dt*[0:totT],tt_c,<span class="string">'r'</span>);
+grid <span class="string">on</span>
+legend(<span class="string">'LTM'</span>,<span class="string">'CTM'</span>)
+xlabel(<span class="string">'Time [hr]'</span>,<span class="string">'FontSize'</span>,12);
+ylabel(<span class="string">'Travel Time [hr]'</span>,<span class="string">'FontSize'</span>,12);
+title(<span class="string">'Travel time graph'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>);
+</pre><img vspace="5" hspace="5" src="tutorial4_07.png" alt=""> <img vspace="5" hspace="5" src="tutorial4_08.png" alt=""> <img vspace="5" hspace="5" src="tutorial4_09.png" alt=""> <h2>Compute the difference between both solutions<a name="9"></a></h2><p>The following lines of code compare the output of both models in terms of difference in density and total travel time spend. The absolute difference in density of both solutions is also depicted in a space-time graph of the main road.</p><pre class="codeinput">fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Comparing LTM &amp; CTM on the same detailed network'</span>)
+display([<span class="string">'- maximum difference in density: '</span>,num2str(max(max(abs(simDensity-dens_n)))),<span class="string">' veh/km'</span>]);
+display([<span class="string">'- average difference in density: '</span>,num2str(sum(sum(abs(simDensity-dens_n)))/sum(sum(simDensity))),<span class="string">' veh/km'</span>]);
+totalTT = sum(sum(dt/2*(simDensity(:,1:end-1)+simDensity(:,2:end)),2).*links.length);
+totalTT_c = sum(sum(dt/2*(dens_n(:,1:end-1)+dens_n(:,2:end)),2).*links.length);
+display([<span class="string">'- absolute difference in total travel time spend: '</span>,num2str(totalTT-totalTT_c),<span class="string">' veh*h'</span>]);
+
+<span class="comment">%Main road</span>
+plotXT(links,1:27,abs(simDensity-dens_n),dt,totT);
+</pre><pre class="codeoutput">
+Comparing LTM &amp; CTM on the same detailed network
+- maximum difference in density: 86.9165 veh/km
+- average difference in density: 0.055451 veh/km
+- absolute difference in total travel time spend: 0.06838 veh*h
+</pre><img vspace="5" hspace="5" src="tutorial4_10.png" alt=""> <h2>Alternative coarser network coding for the LTM<a name="10"></a></h2><p>The link transmission model is able to consider a much larger spatial discretization. This is illustrated by considering only the merges and boundaries of the detailed network as nodes. The resulting coarser network represents the largest spatial descretization that holds the original network structure. This not only reduces the spatial size and memory requirements but also the temporal resolution. It is now possible to choose a much larger time interval that still complies with CFL-conditions.</p><pre class="codeinput"><span class="comment">% Network and demand data</span>
+load <span class="string">net3.mat</span>
+
+<span class="comment">% Plot the network</span>
+plotNetwork(nodes,links,true,[]);
+</pre><img vspace="5" hspace="5" src="tutorial4_11.png" alt=""> <h2>Setup the simulation<a name="11"></a></h2><p>Before the simulation can be run the time interval has to be set and the total number of time steps has to be defined. The time interval is now three times larger and hence three times less time steps are required to cover the same simulation period as before.</p><pre class="codeinput"><span class="comment">%setup the time interval and total number of time steps</span>
+dt_l = min(links.length./links.freeSpeed);
+totT_l = 2/dt_l;
+
+<span class="comment">%build the full ODmatrix</span>
+[ODmatrix_l,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt_l,totT_l);
+
+<span class="comment">%initilize the Turning Fractions (easy if no diverges in the network)</span>
+TF_l = num2cell(ones(size(nodes.id,1),totT_l));
+<span class="keyword">for</span> t=1:totT_l
+    TF_l{2,t} = ones(2,1);
+    TF_l{3,t} = ones(2,1);
+<span class="keyword">end</span>
+clear <span class="string">t</span>;
+</pre><h2>Compute the single-commodity Dynamic Network Loading<a name="12"></a></h2><p>The link transmission model propagates the traffic in the simulation. This is the same function as before.</p><pre class="codeinput">fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Running LTM single-commodity on a coarser network'</span>)
+
+<span class="comment">%run LTM</span>
+tic
+[cvn_up_l,cvn_down_l] = LTM_SC(nodes,links,origins,destinations,ODmatrix_l,dt_l,totT_l,TF_l);
+toc
+</pre><pre class="codeoutput">
+Running LTM single-commodity on a coarser network
+Elapsed time is 0.177283 seconds.
+</pre><h2>Visualize the resulting densities and flows using XT diagrams<a name="13"></a></h2><p>The result of the link transmission model is transformed into  flows and densities in the post processing phase. The resulting XT-graphs are produced with a simple rectangular grid which is now much less dens. The xt-plots now seem less precise. That is because, while LTM actually (implicitly) tracks the waves inside the long links, the postprocessed density is an average over the entire link, hence smoothens out the shock waves. However, travel times over the link are still as precise as before (see below). Also, if precise outputs of any x-location within the link is required, those can be postprocessed from the CVN&#8217;s (not shown in this tutorial).</p><pre class="codeinput"><span class="comment">%Compute the simulated densities &amp; flows for LTM</span>
+[simDensity_l] = cvn2dens(cvn_up_l,cvn_down_l,totT_l,links);
+[simFlows_down_l] = cvn2flows(sum(cvn_down_l,3),dt_l);
+
+<span class="comment">%Density allong the main road for LTM (coarser network)</span>
+plotXT(links,1:3,simDensity_l,dt_l,totT_l);
+title(<span class="string">'XT-graph of densities: LTM (coarser network)'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+
+<span class="comment">%Flow allong the main road for LTM (coarser network)</span>
+plotXT(links,1:3,simFlows_down_l,dt_l,totT_l-1);
+title(<span class="string">'XT-graph of flows: LTM (coarser network)'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial4_12.png" alt=""> <img vspace="5" hspace="5" src="tutorial4_13.png" alt=""> <h2>Transform CVN values to travel times<a name="14"></a></h2><p>The upstream and dowsntream CVN functions of the link transmission model are transformed into travel times for every link in the network. This is compared to the travel times produced by the LTM on the more more detailed network.</p><pre class="codeinput"><span class="comment">%calculate the simulated travel times for LTM (coarser network)</span>
+[simTT_l] = cvn2tt(cvn_up_l,cvn_down_l,dt_l,totT_l,links);
+
+<span class="comment">%visualize the travel time along the main route</span>
+[~,~,~,tt_l]=plotTT(links,1:3,simTT_l,dt_l,totT_l);
+title(<span class="string">'Travel time graph: LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+
+<span class="comment">%compare both travel times</span>
+figure;
+plot(dt*[0:totT],tt,<span class="string">'b'</span>,dt_l*[0:totT_l],tt_l,<span class="string">'r-.'</span>);
+grid <span class="string">on</span>
+legend(<span class="string">'Detailed Network'</span>,<span class="string">'Coarse Network'</span>)
+xlabel(<span class="string">'Time [hr]'</span>,<span class="string">'FontSize'</span>,12);
+ylabel(<span class="string">'Travel Time [hr]'</span>,<span class="string">'FontSize'</span>,12);
+title(<span class="string">'Travel time graph: LTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>);
+</pre><img vspace="5" hspace="5" src="tutorial4_14.png" alt=""> <img vspace="5" hspace="5" src="tutorial4_15.png" alt=""> <h2>Compute the maximum difference between both solutions<a name="15"></a></h2><p>The following lines of code compare the output of both networks in terms of difference in total travel time spend.</p><pre class="codeinput">fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Comparing both LTM solutions'</span>)
+totalTT_l = sum(sum(dt_l/2*(simDensity_l(:,1:end-1)+simDensity_l(:,2:end)),2).*links.length);
+display([<span class="string">'- absolute difference in total travel time spend: '</span>,num2str(totalTT-totalTT_l),<span class="string">' veh*h'</span>]);
+</pre><pre class="codeoutput">
+Comparing both LTM solutions
+- absolute difference in total travel time spend: -0.013889 veh*h
+</pre><h2>Closing notes<a name="16"></a></h2><div><ul><li>Note how in the larger network results are as precise as before although memory requirements and computational effort are lower.</li><li>The LTM is inherently more accurat than the CTM. The additional smoothing of the CTM can even be analytically expressed by a numerical relaxation term.</li></ul></div><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Tutorial 4: Comparing LTM & CTM
+
+%% Disclaimer
+% This file is part of the matlab package for dynamic traffic assignments 
+% developed by the KULeuven. 
+%
+% Copyright (C) 2016  Himpe Willem, Leuven, Belgium
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% any later version.
+% 
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%
+% More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
+% or contact: willem.himpe {@} kuleuven.be
+
+%% Introduction
+% This tutorial illustrates the differences and similarities between the
+% Link Transmission Model (LTM) and the Cell Transmission Model (CTM). The 
+% largest difference between both model are the solution variables. The LTM 
+% is formulated in terms of cumulative vehicle numbers at both link ends,
+% while the CTM is formulated in terms of the density in each cell and the 
+% flow rates over the cell boundaries. Both models are first compared on a 
+% spatial grid of similar size. However, the LTM is able to consider a much 
+% larger spatial discretization without sacrificing numerical precision.
+% On the contrary, the results are more precise for the same time step 
+% size.  
+%
+
+%add these folders to the search path
+addpath('Dynamic Traffic Assignment','Visualization Tools','Network Data')
+%clear the work space
+clear
+%clear the command window
+clc
+%close all windows
+close all
+
+display('<<<Comparing LTM & CTM>>>')
+
+%% Loading the data
+% The network represents a two-lane highway with vehicles moving from right 
+% to left. There are two on-ramps feeding additional traffic into the 
+% system. The demand pattern is chosen such that the most downstream
+% merge forms a temporary bottleneck.
+%
+
+% Network and demand data
+load net1.mat
+
+% Plot the network
+plotNetwork(nodes,links,true,[]);
+
+%% Setup the simulation
+% Before the simulation can be run the time interval has to be set and the
+% total number of time steps has to be defined. These are used to transform
+% the different origin-destination (OD-) matrices into a 3D-matrix. The
+% time interval is bound by CFL-conditions. It can not be larger then the
+% minimal travel time of the fastest kinematic wave in the network.
+% The turning fractions have to be defined for each time interval. They are 
+% all equal to one because no diverges are present in this network.
+%
+
+%setup the maximal time interval and total number of time steps
+dt = min(links.length./links.freeSpeed);
+totT = 2/dt;
+
+%build the full ODmatrix
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+%initilize the Turning Fractions (easy if no diverges in the network)
+TF = num2cell(ones(size(nodes.id,1),totT));
+for t=1:totT
+    TF{10,t} = ones(2,1);
+    TF{25,t} = ones(2,1);
+end
+clear t;
+
+%% Visualize the demand in the network
+% The demand between every origin-destination combination is plotted for
+% each time interval of the simulation.
+%
+
+figure;
+plot(dt*[0:totT-1],reshape(ODmatrix(1,1,:),1,[]),'d-b',dt*[0:totT-1],reshape(ODmatrix(2,1,:),1,[]),'.-r',dt*[0:totT-1],reshape(ODmatrix(3,1,:),1,[]),'x-g')
+legend('OD 1-28','OD 31-28','OD 34-28')
+xlabel('time (h)')
+ylabel('flow (veh/h)')
+
+%% Compute the single-commodity Dynamic Network Loading
+% First the link transmission model is used to propagate the traffic over 
+% the network. Next the cell transmission model is used. 
+% Both models are composed of a link model and a node model which are 
+% consistent with first-order traffic flow theory with a triangular 
+% fundamental diagram. The node model is exactly the same for both models.
+% The largest difference between both model are the solution variables. The 
+% LTM is formulated in terms of cumulative vehicle numbers at both link 
+% ends, while the CTM is formulated in terms of density in  each cell and 
+% the flow rates over the cell boundaries.
+%
+
+display('Running LTM single-commodity on a detailed network')
+
+%run LTM
+tic
+[cvn_up,cvn_down] = LTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+
+display('Running CTM single-commodity')
+
+%run CTM
+tic
+[flows_up,flows_down,dens_n] = CTM_SC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+
+
+%% Visualize the resulting densities and flows using XT diagrams
+% The result of the link transmission model is expressed in cumulative 
+% vehicle numbers (CVN) for every links upstream and downstream end over 
+% the time domain. Flows and densities are computed in post processing 
+% phase as time and space derivates of these CVN functions. For the cell 
+% transmission model density and flow. Resulting densities and flows are 
+% depicted for both models in space-time (or XT) diagrams of the main road.
+%
+
+%Compute the simulated densities & flows for LTM
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(sum(cvn_down,3),dt);
+
+%Density allong the main road for LTM & CTM
+plotXT(links,1:27,simDensity,dt,totT);
+title('XT-graph of densities: LTM','FontSize',14,'fontweight','b')
+plotXT(links,1:27,dens_n,dt,totT);
+title('XT-graph of densities: CTM','FontSize',14,'fontweight','b')
+
+%Flow allong the main road for LTM & CTM
+plotXT(links,1:27,simFlows_down,dt,totT-1);
+title('XT-graph of flows: LTM','FontSize',14,'fontweight','b')
+plotXT(links,1:27,flows_down,dt,totT);
+title('XT-graph of flows: CTM','FontSize',14,'fontweight','b')
+
+%% Transform CVN values to travel times
+% The upstream and dowsntream CVN functions of the link transmission model
+% are transformed into travel times for every link in the network. This is 
+% compared to the travel time based on the density in each cell of the cell 
+% transmission model.
+%
+
+%calculate the simulated travel times for LTM & CTM
+[simTT] = cvn2tt(cvn_up,cvn_down,dt,totT,links);
+[simTT_c] = dens2tt(dens_n,totT,links);
+
+%visualize the travel time along the main route
+[~,~,~,tt]=plotTT(links,1:27,simTT,dt,totT);
+title('Travel time graph: LTM','FontSize',14,'fontweight','b')
+[~,~,~,tt_c]=plotTT(links,1:27,simTT_c,dt,totT);
+title('Travel time graph: CTM','FontSize',14,'fontweight','b')
+
+%compare both travel times
+figure;
+plot(dt*[0:totT],tt,'b',dt*[0:totT],tt_c,'r');
+grid on
+legend('LTM','CTM') 
+xlabel('Time [hr]','FontSize',12);
+ylabel('Travel Time [hr]','FontSize',12);
+title('Travel time graph','FontSize',14,'fontweight','b');
+
+%% Compute the difference between both solutions
+% The following lines of code compare the output of both models in terms of
+% difference in density and total travel time spend. The absolute
+% difference in density of both solutions is also depicted in a space-time 
+% graph of the main road. 
+%
+
+fprintf(1,'\n');
+display('Comparing LTM & CTM on the same detailed network')
+display(['- maximum difference in density: ',num2str(max(max(abs(simDensity-dens_n)))),' veh/km']);
+display(['- average difference in density: ',num2str(sum(sum(abs(simDensity-dens_n)))/sum(sum(simDensity))),' veh/km']);
+totalTT = sum(sum(dt/2*(simDensity(:,1:end-1)+simDensity(:,2:end)),2).*links.length);
+totalTT_c = sum(sum(dt/2*(dens_n(:,1:end-1)+dens_n(:,2:end)),2).*links.length);
+display(['- absolute difference in total travel time spend: ',num2str(totalTT-totalTT_c),' veh*h']);
+
+%Main road
+plotXT(links,1:27,abs(simDensity-dens_n),dt,totT);
+
+%% Alternative coarser network coding for the LTM
+% The link transmission model is able to consider a much larger spatial 
+% discretization. This is illustrated by considering only the merges and
+% boundaries of the detailed network as nodes. The resulting coarser 
+% network represents the largest spatial descretization that holds the 
+% original network structure. This not only reduces the spatial size and 
+% memory requirements but also the temporal resolution. It is now possible 
+% to choose a much larger time interval that still complies with 
+% CFL-conditions.
+%
+
+% Network and demand data
+load net3.mat
+
+% Plot the network
+plotNetwork(nodes,links,true,[]);
+
+%% Setup the simulation
+% Before the simulation can be run the time interval has to be set and the
+% total number of time steps has to be defined. The time interval is now
+% three times larger and hence three times less time steps are required to
+% cover the same simulation period as before.
+%
+
+%setup the time interval and total number of time steps
+dt_l = min(links.length./links.freeSpeed);
+totT_l = 2/dt_l;
+
+%build the full ODmatrix
+[ODmatrix_l,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt_l,totT_l);
+
+%initilize the Turning Fractions (easy if no diverges in the network)
+TF_l = num2cell(ones(size(nodes.id,1),totT_l));
+for t=1:totT_l
+    TF_l{2,t} = ones(2,1);
+    TF_l{3,t} = ones(2,1);
+end
+clear t;
+
+%% Compute the single-commodity Dynamic Network Loading
+% The link transmission model propagates the traffic in the simulation.
+% This is the same function as before.
+
+fprintf(1,'\n');
+display('Running LTM single-commodity on a coarser network')
+
+%run LTM
+tic
+[cvn_up_l,cvn_down_l] = LTM_SC(nodes,links,origins,destinations,ODmatrix_l,dt_l,totT_l,TF_l);
+toc
+
+%% Visualize the resulting densities and flows using XT diagrams
+% The result of the link transmission model is transformed into  flows and 
+% densities in the post processing phase. The resulting XT-graphs are
+% produced with a simple rectangular grid which is now much less dens. The 
+% xt-plots now seem less precise. That is because, while LTM actually 
+% (implicitly) tracks the waves inside the long links, the postprocessed 
+% density is an average over the entire link, hence smoothens out the shock 
+% waves. However, travel times over the link are still as precise as before 
+% (see below). Also, if precise outputs of any x-location within the link 
+% is required, those can be postprocessed from the CVN’s 
+% (not shown in this tutorial).
+%
+
+%Compute the simulated densities & flows for LTM
+[simDensity_l] = cvn2dens(cvn_up_l,cvn_down_l,totT_l,links);
+[simFlows_down_l] = cvn2flows(sum(cvn_down_l,3),dt_l);
+
+%Density allong the main road for LTM (coarser network)
+plotXT(links,1:3,simDensity_l,dt_l,totT_l);
+title('XT-graph of densities: LTM (coarser network)','FontSize',14,'fontweight','b')
+
+%Flow allong the main road for LTM (coarser network)
+plotXT(links,1:3,simFlows_down_l,dt_l,totT_l-1);
+title('XT-graph of flows: LTM (coarser network)','FontSize',14,'fontweight','b')
+
+%% Transform CVN values to travel times
+% The upstream and dowsntream CVN functions of the link transmission model
+% are transformed into travel times for every link in the network. This is
+% compared to the travel times produced by the LTM on the more more
+% detailed network.
+%
+
+%calculate the simulated travel times for LTM (coarser network)
+[simTT_l] = cvn2tt(cvn_up_l,cvn_down_l,dt_l,totT_l,links);
+
+%visualize the travel time along the main route
+[~,~,~,tt_l]=plotTT(links,1:3,simTT_l,dt_l,totT_l);
+title('Travel time graph: LTM','FontSize',14,'fontweight','b')
+
+%compare both travel times
+figure;
+plot(dt*[0:totT],tt,'b',dt_l*[0:totT_l],tt_l,'r-.');
+grid on
+legend('Detailed Network','Coarse Network') 
+xlabel('Time [hr]','FontSize',12);
+ylabel('Travel Time [hr]','FontSize',12);
+title('Travel time graph: LTM','FontSize',14,'fontweight','b');
+
+%% Compute the maximum difference between both solutions
+% The following lines of code compare the output of both networks in terms 
+% of difference in total travel time spend.
+%
+
+fprintf(1,'\n');
+display('Comparing both LTM solutions')
+totalTT_l = sum(sum(dt_l/2*(simDensity_l(:,1:end-1)+simDensity_l(:,2:end)),2).*links.length);
+display(['- absolute difference in total travel time spend: ',num2str(totalTT-totalTT_l),' veh*h']);
+
+%% Closing notes
+%
+% * Note how in the larger network results are as precise as before
+% although memory requirements and computational effort are lower.
+% * The LTM is inherently more accurat than the CTM. The additional
+% smoothing of the CTM can even be analytically expressed by a numerical 
+% relaxation term.
+% 
+
+##### SOURCE END #####
+--></body></html>

@@ -1,0 +1,421 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Tutorial 9: Warm starting the implicit scheme of the LTM</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-06-22"><meta name="DC.source" content="tutorial9.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Tutorial 9: Warm starting the implicit scheme of the LTM</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Disclaimer</a></li><li><a href="#2">Introduction</a></li><li><a href="#3">Loading the data</a></li><li><a href="#4">Setup the simulation (for small and large time intervals)</a></li><li><a href="#5">Computation of the base scenario</a></li><li><a href="#6">Compute the response of a marginal change</a></li></ul></div><h2>Disclaimer<a name="1"></a></h2><p>This file is part of the matlab package for dynamic traffic assignments developed by the KULeuven.</p><p>Copyright (C) 2016  Himpe Willem, Leuven, Belgium</p><p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p><p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p><p>More information at: <a href="http://www.mech.kuleuven.be/en/cib/traffic/downloads">http://www.mech.kuleuven.be/en/cib/traffic/downloads</a> or contact: willem.himpe {@} kuleuven.be</p><h2>Introduction<a name="2"></a></h2><p>This tutorial illustrates the warm starting capabilities of the iterative link transmission scheme. Because the solution is computed iteratively, it has to be initialized. A previous solution that is closer to the new scenarios is computationally less demanding.</p><pre class="codeinput"><span class="comment">%add these folders to the search path</span>
+addpath(<span class="string">'Dynamic Traffic Assignment'</span>,<span class="string">'Visualization Tools'</span>,<span class="string">'Network Data'</span>)
+javaclasspath(<span class="string">'Dynamic Traffic Assignment'</span>);
+<span class="comment">%clear the work space</span>
+clear
+<span class="comment">%clear the command window</span>
+clc
+<span class="comment">%close all windows</span>
+close <span class="string">all</span>
+
+display(<span class="string">'&lt;&lt;&lt;Warm starting the implicit scheme of the LTM&gt;&gt;&gt;'</span>)
+</pre><pre class="codeoutput">&lt;&lt;&lt;Warm starting the implicit scheme of the LTM&gt;&gt;&gt;
+</pre><h2>Loading the data<a name="3"></a></h2><p>The network represents a simple corridor of network that consists of the interaction of three highways (R0-E40-E314) in the area between Leuven and Brussels in Belgium.</p><pre class="codeinput"><span class="comment">% Network and demand data</span>
+load <span class="string">net5_old.mat</span>
+
+<span class="comment">% Plot the network</span>
+plotNetwork(nodes,links,true,[]);
+</pre><img vspace="5" hspace="5" src="tutorial9_01.png" alt=""> <h2>Setup the simulation (for small and large time intervals)<a name="4"></a></h2><p>Before the simulation can be run the time interval has to be set and the total number of time steps has to be defined. These are used to transform the different origin-destination (OD-) matrices into a 3D-matrix. If the time interval is bound by CFL-conditions the iterative link transmission model reduces to an explicit scheme. If the time interval is larger iterations are required to find a consistent dynamic network loading.</p><pre class="codeinput"><span class="comment">%setup the time interval and total number of time steps</span>
+dt = 5/60;
+totT = round(4/dt);
+
+<span class="comment">%build the full ODmatrix</span>
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+</pre><h2>Computation of the base scenario<a name="5"></a></h2><p>First the base scenario is computed with a cold start. The iteration procedure of each time interval is initialized with CVN values of the previous time slice. This assumes that initially no vehicles proceed to the next time interval.</p><pre class="codeinput">display(<span class="string">'Running I-LTM with a cold start'</span>)
+
+<span class="comment">%set faster lookup structures</span>
+[links,node_prop] = dataParser(links,nodes,origins,destinations,dt);
+<span class="comment">%set turning fractions faster (based on free flow conditions)</span>
+TF=TF_init(node_prop,links,destinations,dt,totT);
+
+<span class="comment">%run I-LTM</span>
+tic
+[cvn_up_db,cvn_down_db,con_up,con_down] = ILTM_cold_mex(node_prop,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+
+
+<span class="comment">%compute the density</span>
+cvn_up_totb=reshape(sum(cvn_up_db,2),[],totT+1);
+cvn_down_totb=reshape(sum(cvn_down_db,2),[],totT+1);
+[simDensity_db] = cvn2dens(cvn_up_totb,cvn_down_totb,totT,links);
+
+<span class="comment">%visualize the result</span>
+route = [1,2,51,55,5,8,11,13,15,17,19,22,23,26,29,56,58,33];
+plotXT(links,route,simDensity_db,dt,totT);
+title(<span class="string">'XT-graph of densities (E40 E-&gt;W): Cold start'</span>,<span class="string">'FontSize'</span>,10,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><pre class="codeoutput">Running I-LTM with a cold start
+Elapsed time is 0.317492 seconds.
+</pre><img vspace="5" hspace="5" src="tutorial9_02.png" alt=""> <h2>Compute the response of a marginal change<a name="6"></a></h2><p>Now a new scenario is computed intialized or warm started with the base scenario. Fewer node updates and iterations are required to find a solution in this case which is beneficial for computation times. First a variation (adding an amount of vehicles to the ODmatrix) is applied before the peak hour. Because the solution is computed in terms of cumulative vehicle numbers such a variation persists until the end of the simulation. Next a variation during the peak hour is applied. Because such a variation alters the congestion pattern. Much more nodes have to be updated thus increasing computation times. Finally a variation is applied after the peak hour. Now the region in space and time that is affected by this change is limited and computational gaines are the largest.</p><pre class="codeinput">display(<span class="string">'Running I-LTM with a warm start for a variation before the peak'</span>)
+
+<span class="comment">%select odt combination and amount of vehicles to add to the ODmatrix</span>
+o = 1;
+d = 3;
+t = 3;
+val = 1*dt;
+
+<span class="comment">%activate the changed origin</span>
+nodes2update = false(length(nodes.id),totT+1);
+nodes2update(origins(1),:) = true;
+
+<span class="comment">%update the ODmatrix</span>
+ODmatrix_t = ODmatrix;
+ODmatrix_t(o,d,t)=ODmatrix(o,d,t)+val;
+
+<span class="comment">%run ILTM</span>
+tic
+[cvn_up_d,cvn_down_d]=ILTM_warm_mex(node_prop,links,origins,destinations,ODmatrix_t,dt,totT,TF,cvn_up_db,cvn_down_db,con_up,con_down,nodes2update);
+toc
+
+<span class="comment">%compute the density</span>
+cvn_up_tot=reshape(sum(cvn_up_d,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_d,2),[],totT+1);
+[simDensity_d] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+
+<span class="comment">%visualize the result</span>
+plotXT(links,route,abs(simDensity_db-simDensity_d),dt,totT);
+title(<span class="string">'Warm start for a variation before the peak'</span>,<span class="string">'FontSize'</span>,10,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><pre class="codeoutput">Running I-LTM with a warm start for a variation before the peak
+Elapsed time is 0.107337 seconds.
+</pre><img vspace="5" hspace="5" src="tutorial9_03.png" alt=""> <pre class="codeinput">display(<span class="string">'Running I-LTM with a warm start for a variation during the peak'</span>)
+
+<span class="comment">%select odt combination and amount of vehicles to add to the ODmatrix</span>
+o = 1;
+d = 3;
+t = 10;
+val = 1*dt;
+
+<span class="comment">%activate the changed origin</span>
+nodes2update = false(length(nodes.id),totT+1);
+nodes2update(origins(1),:) = true;
+
+<span class="comment">%update the ODmatrix</span>
+ODmatrix_t = ODmatrix;
+ODmatrix_t(o,d,t)=ODmatrix(o,d,t)+val;
+
+<span class="comment">%run ILTM</span>
+tic
+[cvn_up_d,cvn_down_d]=ILTM_warm_mex(node_prop,links,origins,destinations,ODmatrix_t,dt,totT,TF,cvn_up_db,cvn_down_db,con_up,con_down,nodes2update);
+toc
+
+<span class="comment">%compute the density</span>
+cvn_up_tot=reshape(sum(cvn_up_d,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_d,2),[],totT+1);
+[simDensity_d] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+
+<span class="comment">%visualize the result</span>
+plotXT(links,route,abs(simDensity_db-simDensity_d),dt,totT);
+title(<span class="string">'Warm start for a variation during the peak'</span>,<span class="string">'FontSize'</span>,10,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><pre class="codeoutput">Running I-LTM with a warm start for a variation during the peak
+Elapsed time is 0.082711 seconds.
+</pre><img vspace="5" hspace="5" src="tutorial9_04.png" alt=""> <pre class="codeinput">display(<span class="string">'Running I-LTM with a warm start for a variation after the peak'</span>)
+
+<span class="comment">%select odt combination and amount of vehicles to add to the ODmatrix</span>
+o = 1;
+d = 3;
+t = 40;
+val = 1*dt;
+
+<span class="comment">%activate the changed origin</span>
+nodes2update = false(length(nodes.id),totT+1);
+nodes2update(origins(1),:) = true;
+
+<span class="comment">%update the ODmatrix</span>
+ODmatrix_t = ODmatrix;
+ODmatrix_t(o,d,t)=ODmatrix(o,d,t)+val;
+
+<span class="comment">%run ILTM</span>
+tic
+[cvn_up_d,cvn_down_d]=ILTM_warm_mex(node_prop,links,origins,destinations,ODmatrix_t,dt,totT,TF,cvn_up_db,cvn_down_db,con_up,con_down,nodes2update);
+toc
+
+<span class="comment">%compute the density</span>
+cvn_up_tot=reshape(sum(cvn_up_d,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_d,2),[],totT+1);
+[simDensity_d] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+
+<span class="comment">%visualize the result</span>
+plotXT(links,route,abs(simDensity_db-simDensity_d),dt,totT);
+title(<span class="string">'Warm start for a variation after the peak'</span>,<span class="string">'FontSize'</span>,10,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><pre class="codeoutput">Running I-LTM with a warm start for a variation after the peak
+Elapsed time is 0.008133 seconds.
+</pre><img vspace="5" hspace="5" src="tutorial9_05.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Tutorial 9: Warm starting the implicit scheme of the LTM
+
+%% Disclaimer
+% This file is part of the matlab package for dynamic traffic assignments 
+% developed by the KULeuven. 
+%
+% Copyright (C) 2016  Himpe Willem, Leuven, Belgium
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% any later version.
+% 
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%
+% More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
+% or contact: willem.himpe {@} kuleuven.be
+
+%% Introduction
+% This tutorial illustrates the warm starting capabilities of the iterative
+% link transmission scheme. Because the solution is computed iteratively,
+% it has to be initialized. A previous solution that is closer to the new
+% scenarios is computationally less demanding. 
+%
+
+%add these folders to the search path
+addpath('Dynamic Traffic Assignment','Visualization Tools','Network Data')
+javaclasspath('Dynamic Traffic Assignment');
+%clear the work space
+clear
+%clear the command window
+clc
+%close all windows
+close all
+
+display('<<<Warm starting the implicit scheme of the LTM>>>')
+
+%% Loading the data
+% The network represents a simple corridor of network that consists of the
+% interaction of three highways (R0-E40-E314) in the area between Leuven
+% and Brussels in Belgium. 
+%
+
+% Network and demand data
+load net5_old.mat
+
+% Plot the network
+plotNetwork(nodes,links,true,[]);
+
+%% Setup the simulation (for small and large time intervals)
+% Before the simulation can be run the time interval has to be set and the
+% total number of time steps has to be defined. These are used to transform
+% the different origin-destination (OD-) matrices into a 3D-matrix. If the
+% time interval is bound by CFL-conditions the iterative link transmission 
+% model reduces to an explicit scheme. If the time interval is larger 
+% iterations are required to find a consistent dynamic network loading.
+%
+
+%setup the time interval and total number of time steps
+dt = 5/60;
+totT = round(4/dt);
+
+%build the full ODmatrix
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+%% Computation of the base scenario
+% First the base scenario is computed with a cold start. The iteration
+% procedure of each time interval is initialized with CVN values of the
+% previous time slice. This assumes that initially no vehicles proceed to
+% the next time interval.
+%
+
+display('Running I-LTM with a cold start')
+
+%set faster lookup structures
+[links,node_prop] = dataParser(links,nodes,origins,destinations,dt);
+%set turning fractions faster (based on free flow conditions)
+TF=TF_init(node_prop,links,destinations,dt,totT);
+ 
+%run I-LTM
+tic
+[cvn_up_db,cvn_down_db,con_up,con_down] = ILTM_cold_mex(node_prop,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+
+
+%compute the density
+cvn_up_totb=reshape(sum(cvn_up_db,2),[],totT+1);
+cvn_down_totb=reshape(sum(cvn_down_db,2),[],totT+1);
+[simDensity_db] = cvn2dens(cvn_up_totb,cvn_down_totb,totT,links);
+
+%visualize the result
+route = [1,2,51,55,5,8,11,13,15,17,19,22,23,26,29,56,58,33];
+plotXT(links,route,simDensity_db,dt,totT);
+title('XT-graph of densities (E40 E->W): Cold start','FontSize',10,'fontweight','b')
+
+%% Compute the response of a marginal change
+% Now a new scenario is computed intialized or warm started with the base 
+% scenario. Fewer node updates and iterations are required to find a
+% solution in this case which is beneficial for computation times. First a
+% variation (adding an amount of vehicles to the ODmatrix) is applied 
+% before the peak hour. Because the solution is computed in terms of 
+% cumulative vehicle numbers such a variation persists until the end of the 
+% simulation. Next a variation during the peak hour is applied. Because
+% such a variation alters the congestion pattern. Much more nodes have to
+% be updated thus increasing computation times. Finally a variation is
+% applied after the peak hour. Now the region in space and time that is
+% affected by this change is limited and computational gaines are the
+% largest.
+%
+
+display('Running I-LTM with a warm start for a variation before the peak')
+
+%select odt combination and amount of vehicles to add to the ODmatrix
+o = 1;
+d = 3;
+t = 3;
+val = 1*dt;
+
+%activate the changed origin
+nodes2update = false(length(nodes.id),totT+1);
+nodes2update(origins(1),:) = true;
+
+%update the ODmatrix
+ODmatrix_t = ODmatrix;
+ODmatrix_t(o,d,t)=ODmatrix(o,d,t)+val;
+
+%run ILTM
+tic
+[cvn_up_d,cvn_down_d]=ILTM_warm_mex(node_prop,links,origins,destinations,ODmatrix_t,dt,totT,TF,cvn_up_db,cvn_down_db,con_up,con_down,nodes2update);
+toc
+
+%compute the density
+cvn_up_tot=reshape(sum(cvn_up_d,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_d,2),[],totT+1);
+[simDensity_d] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+
+%visualize the result
+plotXT(links,route,abs(simDensity_db-simDensity_d),dt,totT);
+title('Warm start for a variation before the peak','FontSize',10,'fontweight','b')
+
+%%
+
+display('Running I-LTM with a warm start for a variation during the peak')
+
+%select odt combination and amount of vehicles to add to the ODmatrix
+o = 1;
+d = 3;
+t = 10;
+val = 1*dt;
+
+%activate the changed origin
+nodes2update = false(length(nodes.id),totT+1);
+nodes2update(origins(1),:) = true;
+
+%update the ODmatrix
+ODmatrix_t = ODmatrix;
+ODmatrix_t(o,d,t)=ODmatrix(o,d,t)+val;
+
+%run ILTM
+tic
+[cvn_up_d,cvn_down_d]=ILTM_warm_mex(node_prop,links,origins,destinations,ODmatrix_t,dt,totT,TF,cvn_up_db,cvn_down_db,con_up,con_down,nodes2update);
+toc
+
+%compute the density
+cvn_up_tot=reshape(sum(cvn_up_d,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_d,2),[],totT+1);
+[simDensity_d] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+
+%visualize the result
+plotXT(links,route,abs(simDensity_db-simDensity_d),dt,totT);
+title('Warm start for a variation during the peak','FontSize',10,'fontweight','b')
+
+%% 
+
+display('Running I-LTM with a warm start for a variation after the peak')
+
+%select odt combination and amount of vehicles to add to the ODmatrix
+o = 1;
+d = 3;
+t = 40;
+val = 1*dt;
+
+%activate the changed origin
+nodes2update = false(length(nodes.id),totT+1);
+nodes2update(origins(1),:) = true;
+
+%update the ODmatrix
+ODmatrix_t = ODmatrix;
+ODmatrix_t(o,d,t)=ODmatrix(o,d,t)+val;
+
+%run ILTM
+tic
+[cvn_up_d,cvn_down_d]=ILTM_warm_mex(node_prop,links,origins,destinations,ODmatrix_t,dt,totT,TF,cvn_up_db,cvn_down_db,con_up,con_down,nodes2update);
+toc
+
+%compute the density
+cvn_up_tot=reshape(sum(cvn_up_d,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_d,2),[],totT+1);
+[simDensity_d] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+
+%visualize the result
+plotXT(links,route,abs(simDensity_db-simDensity_d),dt,totT);
+title('Warm start for a variation after the peak','FontSize',10,'fontweight','b')
+##### SOURCE END #####
+--></body></html>

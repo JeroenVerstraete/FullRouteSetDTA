@@ -1,0 +1,364 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Tutorial 8: Advance algorithms, faster data types and compilation (mex) for the implicit scheme</title><meta name="generator" content="MATLAB 8.3"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-06-22"><meta name="DC.source" content="tutorial8.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Tutorial 8: Advance algorithms, faster data types and compilation (mex) for the implicit scheme</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Disclaimer</a></li><li><a href="#2">Introduction</a></li><li><a href="#3">Loading the data</a></li><li><a href="#4">Setup the simulation (for small and large time intervals)</a></li><li><a href="#5">initilize the Destination Based Split rates</a></li><li><a href="#6">Compute a multi-commodity Dynamic Network Loading with large time intervals</a></li><li><a href="#7">Faster computation</a></li><li><a href="#8">Even faster computation</a></li><li><a href="#9">Visualize the resulting densities using XT diagrams</a></li><li><a href="#10">Compute the maximum difference between all solutions</a></li><li><a href="#11">Closing notes</a></li></ul></div><h2>Disclaimer<a name="1"></a></h2><p>This file is part of the matlab package for dynamic traffic assignments developed by the KULeuven.</p><p>Copyright (C) 2016  Himpe Willem, Leuven, Belgium</p><p>This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or any later version.</p><p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.</p><p>You should have received a copy of the GNU General Public License along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p><p>More information at: <a href="http://www.mech.kuleuven.be/en/cib/traffic/downloads">http://www.mech.kuleuven.be/en/cib/traffic/downloads</a> or contact: willem.himpe {@} kuleuven.be</p><h2>Introduction<a name="2"></a></h2><p>This tutorial introduces faster data types aand compilation techniques for the implicit link transmission model. Additional the jacobi iteration scheme is replaced by a Gauss-Seidel updating of the node updates within a time slice. A node is only updated if its boundary conditions are changed. This leads to scheme with a minimum of redundant computations.</p><pre class="codeinput"><span class="comment">%add these folders to the search path</span>
+addpath(<span class="string">'Dynamic Traffic Assignment'</span>,<span class="string">'Visualization Tools'</span>,<span class="string">'Network Data'</span>)
+javaclasspath(<span class="string">'Dynamic Traffic Assignment'</span>);
+<span class="comment">%clear the work space</span>
+clear
+<span class="comment">%clear the command window</span>
+clc
+<span class="comment">%close all windows</span>
+close <span class="string">all</span>
+
+display(<span class="string">'&lt;&lt;&lt;Faster data types and compilation (mex) for the implicit scheme&gt;&gt;&gt;'</span>)
+</pre><pre class="codeoutput">&lt;&lt;&lt;Faster data types and compilation (mex) for the implicit scheme&gt;&gt;&gt;
+</pre><h2>Loading the data<a name="3"></a></h2><p>The network represents a simple corridor of network that consists of the interaction of three highways (R0-E40-E314) in the area between Leuven and Brussels in Belgium.</p><pre class="codeinput"><span class="comment">% Network and demand data</span>
+load <span class="string">net5.mat</span>
+
+<span class="comment">% Plot the network</span>
+plotNetwork(nodes,links,true,[]);
+</pre><img vspace="5" hspace="5" src="tutorial8_01.png" alt=""> <h2>Setup the simulation (for small and large time intervals)<a name="4"></a></h2><p>Before the simulation can be run the time interval has to be set and the total number of time steps has to be defined. These are used to transform the different origin-destination (OD-) matrices into a 3D-matrix. If the time interval is bound by CFL-conditions the iterative link transmission model reduces to an explicit scheme. If the time interval is larger iterations are required to find a consistent dynamic network loading.</p><pre class="codeinput"><span class="comment">%setup the time interval and total number of time steps</span>
+dt = 5/60;
+totT = round(4/dt);
+
+<span class="comment">%build the full ODmatrix</span>
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+</pre><h2>initilize the Destination Based Split rates<a name="5"></a></h2><p>The destination based split rates are set such that only the shortest path in free flow conditions is used. In this network there is no route choice and it is not required to compute the users respons to delays.</p><pre class="codeinput"><span class="comment">%Compute free flow travel times on each link for every time interval.</span>
+tt_free = repmat(links.length./links.freeSpeed,1,totT+1);
+<span class="comment">%Compute destination based turning fractions</span>
+TF = allOrNothingTF(nodes,links,destinations,tt_free,[],dt,totT,10*dt,<span class="string">'last'</span>);
+</pre><h2>Compute a multi-commodity Dynamic Network Loading with large time intervals<a name="6"></a></h2><p>First the base implementation of the link transmission model is used to propagate the traffic over the network. This model updates nodes repeatedly until no more changes are observed. All nodes are updates simulateneously, like in Jacobi iterative scheme.</p><pre class="codeinput">display(<span class="string">'Running I-LTM base implementation'</span>)
+
+<span class="comment">%run ILTM</span>
+tic
+[cvn_up_d,cvn_down_d] = ILTM_BASE(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+</pre><pre class="codeoutput">Running I-LTM base implementation
+average number of iterations: 24.3333
+maximum number of iterations: 49
+total number of node updates: 25392
+Elapsed time is 10.567376 seconds.
+</pre><h2>Faster computation<a name="7"></a></h2><p>Now the advanced implementation of the link transmission model is used to propagate the traffic over the network. This model updates nodes repeatedly until no more changes are observed. All nodes are updates sequentially, like in Gauss-Seidel iterative scheme. If the boundary conditions of a node are unchanged with respect to the previous iteration no update is performend.</p><pre class="codeinput">fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Running ILTM advanded implementation'</span>)
+
+<span class="comment">%set faster lookup structures</span>
+load <span class="string">net5_old.mat</span>
+[links,node_prop] = dataParser(links,nodes,origins,destinations,dt);
+<span class="comment">%set turning fractions faster (based on free flow conditions)</span>
+TF_f=TF_init(node_prop,links,destinations,dt,totT);
+
+<span class="comment">%run ILTM</span>
+tic
+[cvn_up_df,cvn_down_df] = ILTM(node_prop,links,origins,destinations,ODmatrix,dt,totT,TF_f);
+toc
+
+<span class="comment">%cvn values are also in a different form</span>
+cvn_up_tot=reshape(sum(cvn_up_df,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_df,2),[],totT+1);
+</pre><pre class="codeoutput">
+Running ILTM advanded implementation
+average number of iterations: 44.7292
+maximum number of iterations: 103
+total number of node updates: 21061
+Elapsed time is 4.456306 seconds.
+</pre><h2>Even faster computation<a name="8"></a></h2><p>Finally the matlab functions are also compiled to machine code (mex-file). This leads to an additional speedup compared to the native matlab code.</p><pre class="codeinput">fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Running I-LTM mex implementation'</span>)
+
+<span class="comment">%run ILTM</span>
+tic
+[cvn_up_dm,cvn_down_dm] = ILTM_cold_mex(node_prop,links,origins,destinations,ODmatrix,dt,totT,TF_f);
+toc
+
+<span class="comment">%cvn values are also in a different form</span>
+cvn_up_totm=reshape(sum(cvn_up_dm,2),[],totT+1);
+cvn_down_totm=reshape(sum(cvn_down_dm,2),[],totT+1);
+</pre><pre class="codeoutput">
+Running I-LTM mex implementation
+Elapsed time is 0.314171 seconds.
+</pre><h2>Visualize the resulting densities using XT diagrams<a name="9"></a></h2><p>Resulting densities and flows are depicted for all three approaches in space-time (or XT) diagrams of the E40 highway from east to west.</p><pre class="codeinput"><span class="comment">%compute the simulated densities &amp; flows</span>
+[simDensity_d] = cvn2dens(sum(cvn_up_d,3),sum(cvn_down_d,3),totT,links);
+[simFlows_down_d] = cvn2flows(sum(cvn_down_d,3),dt);
+[simDensity_df] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+[simFlows_down_df] = cvn2flows(cvn_down_tot,dt);
+[simDensity_dm] = cvn2dens(cvn_up_totm,cvn_down_totm,totT,links);
+[simFlows_down_dm] = cvn2flows(cvn_down_totm,dt);
+
+
+<span class="comment">%Main road</span>
+route = [1,2,51,55,5,8,11,13,15,17,19,22,23,26,29,56,58,33];
+plotXT(links,route,simDensity_d,dt,totT);
+title(<span class="string">'XT-graph of densities (E40 E-&gt;W): base ILTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+plotXT(links,route,simDensity_df,dt,totT);
+title(<span class="string">'XT-graph of densities (E40 E-&gt;W): advance ILTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+plotXT(links,route,simDensity_dm,dt,totT);
+title(<span class="string">'XT-graph of densities (E40 E-&gt;W): mex ILTM'</span>,<span class="string">'FontSize'</span>,14,<span class="string">'fontweight'</span>,<span class="string">'b'</span>)
+</pre><img vspace="5" hspace="5" src="tutorial8_02.png" alt=""> <img vspace="5" hspace="5" src="tutorial8_03.png" alt=""> <img vspace="5" hspace="5" src="tutorial8_04.png" alt=""> <h2>Compute the maximum difference between all solutions<a name="10"></a></h2><p>The following lines of code compare the output of both models in terms of difference in densities.</p><pre class="codeinput">fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Comparing I-LTM base &amp; I-LTM'</span>)
+display([<span class="string">'- maximum difference in density: '</span>,num2str(max(max(abs(simDensity_d-simDensity_df)))),<span class="string">' veh/km'</span>]);
+display([<span class="string">'- average difference in density: '</span>,num2str(sum(sum(abs(simDensity_df-simDensity_d)))/sum(sum(simDensity_d))),<span class="string">' veh/km'</span>]);
+
+fprintf(1,<span class="string">'\n'</span>);
+display(<span class="string">'Comparing I-LTM &amp; I-LTM mex'</span>)
+display([<span class="string">'- maximum difference in density: '</span>,num2str(max(max(abs(simDensity_dm-simDensity_df)))),<span class="string">' veh/km'</span>]);
+display([<span class="string">'- average difference in density: '</span>,num2str(sum(sum(abs(simDensity_df-simDensity_dm)))/sum(sum(simDensity_df))),<span class="string">' veh/km'</span>]);
+</pre><pre class="codeoutput">
+Comparing I-LTM base &amp; I-LTM
+- maximum difference in density: 4.064e-07 veh/km
+- average difference in density: 6.7754e-11 veh/km
+
+Comparing I-LTM &amp; I-LTM mex
+- maximum difference in density: 0 veh/km
+- average difference in density: 0 veh/km
+</pre><h2>Closing notes<a name="11"></a></h2><div><ul><li>ITEM1</li><li>ITEM2</li></ul></div><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2014a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Tutorial 8: Advance algorithms, faster data types and compilation (mex) for the implicit scheme
+
+%% Disclaimer
+% This file is part of the matlab package for dynamic traffic assignments 
+% developed by the KULeuven. 
+%
+% Copyright (C) 2016  Himpe Willem, Leuven, Belgium
+%
+% This program is free software: you can redistribute it and/or modify
+% it under the terms of the GNU General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% any later version.
+% 
+% This program is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+% GNU General Public License for more details.
+% 
+% You should have received a copy of the GNU General Public License
+% along with this program.  If not, see <http://www.gnu.org/licenses/>.
+%
+% More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
+% or contact: willem.himpe {@} kuleuven.be
+
+%% Introduction
+% This tutorial introduces faster data types aand compilation techniques 
+% for the implicit link transmission model. Additional the jacobi iteration 
+% scheme is replaced by a Gauss-Seidel updating of the node updates within 
+% a time slice. A node is only updated if its boundary conditions are 
+% changed. This leads to scheme with a minimum of redundant computations.
+%
+
+%add these folders to the search path
+addpath('Dynamic Traffic Assignment','Visualization Tools','Network Data')
+javaclasspath('Dynamic Traffic Assignment');
+%clear the work space
+clear
+%clear the command window
+clc
+%close all windows
+close all
+
+display('<<<Faster data types and compilation (mex) for the implicit scheme>>>')
+
+%% Loading the data
+% The network represents a simple corridor of network that consists of the
+% interaction of three highways (R0-E40-E314) in the area between Leuven
+% and Brussels in Belgium. 
+%
+
+% Network and demand data
+load net5.mat
+
+% Plot the network
+plotNetwork(nodes,links,true,[]);
+
+%% Setup the simulation (for small and large time intervals)
+% Before the simulation can be run the time interval has to be set and the
+% total number of time steps has to be defined. These are used to transform
+% the different origin-destination (OD-) matrices into a 3D-matrix. If the
+% time interval is bound by CFL-conditions the iterative link transmission 
+% model reduces to an explicit scheme. If the time interval is larger 
+% iterations are required to find a consistent dynamic network loading.
+%
+
+%setup the time interval and total number of time steps
+dt = 5/60;
+totT = round(4/dt);
+
+%build the full ODmatrix
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+%% initilize the Destination Based Split rates
+% The destination based split rates are set such that only the shortest
+% path in free flow conditions is used. In this network there is no route
+% choice and it is not required to compute the users respons to delays.
+
+%Compute free flow travel times on each link for every time interval.
+tt_free = repmat(links.length./links.freeSpeed,1,totT+1);
+%Compute destination based turning fractions
+TF = allOrNothingTF(nodes,links,destinations,tt_free,[],dt,totT,10*dt,'last');
+
+%% Compute a multi-commodity Dynamic Network Loading with large time intervals
+% First the base implementation of the link transmission model is used to 
+% propagate the traffic over the network. This model updates nodes 
+% repeatedly until no more changes are observed. All nodes are updates
+% simulateneously, like in Jacobi iterative scheme. 
+%
+
+display('Running I-LTM base implementation')
+
+%run ILTM
+tic
+[cvn_up_d,cvn_down_d] = ILTM_BASE(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+toc
+
+%% Faster computation
+% Now the advanced implementation of the link transmission model is used to 
+% propagate the traffic over the network. This model updates nodes 
+% repeatedly until no more changes are observed. All nodes are updates
+% sequentially, like in Gauss-Seidel iterative scheme. If the boundary
+% conditions of a node are unchanged with respect to the previous iteration
+% no update is performend.
+%
+
+fprintf(1,'\n');
+display('Running ILTM advanded implementation')
+
+%set faster lookup structures
+load net5_old.mat
+[links,node_prop] = dataParser(links,nodes,origins,destinations,dt);
+%set turning fractions faster (based on free flow conditions)
+TF_f=TF_init(node_prop,links,destinations,dt,totT);
+
+%run ILTM
+tic
+[cvn_up_df,cvn_down_df] = ILTM(node_prop,links,origins,destinations,ODmatrix,dt,totT,TF_f);
+toc
+
+%cvn values are also in a different form
+cvn_up_tot=reshape(sum(cvn_up_df,2),[],totT+1);
+cvn_down_tot=reshape(sum(cvn_down_df,2),[],totT+1);
+
+%% Even faster computation
+% Finally the matlab functions are also compiled to machine code (mex-file). 
+% This leads to an additional speedup compared to the native matlab code.
+%
+
+fprintf(1,'\n');
+display('Running I-LTM mex implementation')
+
+%run ILTM
+tic
+[cvn_up_dm,cvn_down_dm] = ILTM_cold_mex(node_prop,links,origins,destinations,ODmatrix,dt,totT,TF_f);
+toc
+
+%cvn values are also in a different form
+cvn_up_totm=reshape(sum(cvn_up_dm,2),[],totT+1);
+cvn_down_totm=reshape(sum(cvn_down_dm,2),[],totT+1);
+
+%% Visualize the resulting densities using XT diagrams
+% Resulting densities and flows are depicted for all three approaches in 
+% space-time (or XT) diagrams of the E40 highway from east to west.
+%
+
+%compute the simulated densities & flows
+[simDensity_d] = cvn2dens(sum(cvn_up_d,3),sum(cvn_down_d,3),totT,links);
+[simFlows_down_d] = cvn2flows(sum(cvn_down_d,3),dt);
+[simDensity_df] = cvn2dens(cvn_up_tot,cvn_down_tot,totT,links);
+[simFlows_down_df] = cvn2flows(cvn_down_tot,dt);
+[simDensity_dm] = cvn2dens(cvn_up_totm,cvn_down_totm,totT,links);
+[simFlows_down_dm] = cvn2flows(cvn_down_totm,dt);
+
+
+%Main road
+route = [1,2,51,55,5,8,11,13,15,17,19,22,23,26,29,56,58,33];
+plotXT(links,route,simDensity_d,dt,totT);
+title('XT-graph of densities (E40 E->W): base ILTM','FontSize',14,'fontweight','b')
+plotXT(links,route,simDensity_df,dt,totT);
+title('XT-graph of densities (E40 E->W): advance ILTM','FontSize',14,'fontweight','b')
+plotXT(links,route,simDensity_dm,dt,totT);
+title('XT-graph of densities (E40 E->W): mex ILTM','FontSize',14,'fontweight','b')
+
+%% Compute the maximum difference between all solutions
+% The following lines of code compare the output of both models in terms of
+% difference in densities. 
+%
+
+fprintf(1,'\n');
+display('Comparing I-LTM base & I-LTM')
+display(['- maximum difference in density: ',num2str(max(max(abs(simDensity_d-simDensity_df)))),' veh/km']);
+display(['- average difference in density: ',num2str(sum(sum(abs(simDensity_df-simDensity_d)))/sum(sum(simDensity_d))),' veh/km']);
+
+fprintf(1,'\n');
+display('Comparing I-LTM & I-LTM mex')
+display(['- maximum difference in density: ',num2str(max(max(abs(simDensity_dm-simDensity_df)))),' veh/km']);
+display(['- average difference in density: ',num2str(sum(sum(abs(simDensity_df-simDensity_dm)))/sum(sum(simDensity_df))),' veh/km']);
+
+%% Closing notes
+%
+% * ITEM1
+% * ITEM2
+% 
+##### SOURCE END #####
+--></body></html>
