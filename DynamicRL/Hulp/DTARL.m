@@ -69,8 +69,13 @@ gap = inf;
 gap_TF = inf;
 TF = [];
 
+connectionMatrix = zeros(totLinks,totLinks);
+for l=1:totLinks
+    connectionMatrix(l,[links.fromNode]==links.toNode(l))=1; %check if connection is possible
+end
+
 %initialize the turning fractions (both first and last give the same result)
-TF_new = RLTF(nodes,links,destinations,simTT,dt,totT,cvn_up,theta);
+TF_new = TFRL(nodes,links,origins,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,connectionMatrix);
 
 [flows_up_prev] = cvn2flows(sum(cvn_up,3),dt);
 
@@ -109,7 +114,7 @@ while it < maxIt && gap > 10^-6
     
     %Compute new turning fractions via all-or-nothing assignment
     %and compute convergence gap    
-    [TF_new,gap,gap_s] = RLTF(nodes,links,destinations,simTT,dt,totT,cvn_up,theta);
+    [TF_new,gap,gap_s] = TFRL(nodes,links,origins,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,connectionMatrix);
     
 
     gap_flow = sum(sum(abs(flows_up-flows_up_prev)));
