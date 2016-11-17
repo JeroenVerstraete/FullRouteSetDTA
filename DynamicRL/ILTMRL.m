@@ -1,4 +1,4 @@
-function [cvn_up,cvn_down,con_up,con_down] = ILTM_v4(nodes,links,origins,destinations,ODmatrix,timeInterval,totTimeIntervals,TF_P...
+function [cvn_up,cvn_down,con_up,con_down] = ILTMRL(nodes,links,origins,destinations,ODmatrix,timeInterval,totTimeIntervals,TF_P...
     ,varargin)
 %#codegen
 
@@ -49,7 +49,7 @@ inTF_index = nodes.incomingLinksTFindex;
 outTF_index = nodes.outgoingLinksTFindex;
 posTF = nodes.positionFirstTF;
 
-if nargin==8
+if nargin==8 %number of argument inputs
     cvn_up = zeros(totLinks,totDestinations,totTimeIntervals+1);
     cvn_down = zeros(totLinks,totDestinations,totTimeIntervals+1);
     con_up = false(totLinks,totTimeIntervals+1);

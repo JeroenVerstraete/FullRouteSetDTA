@@ -22,12 +22,16 @@ tt_free = repmat(links.length./links.freeSpeed,1,totT+1);
 TF = allOrNothingTF(nodes,links,destinations,tt_free,[],dt,totT,10*dt,'last');
 
 
+%% LTMRL
+[cvn_up,cvn_down] = ILTMRL(nodes,links,origins,destinations,ODmatrix,dt,totT,TF_P);
+
+
 %% Compute the Dynamic Network Loading
 
 %run LTM
-tic
-[cvn_up,cvn_down] = ILTM_BASE(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
-toc
+% tic
+% [cvn_up,cvn_down] = ILTM_BASE(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+% toc
 
 
 %% Transform CVN values to recognizable traffic states
