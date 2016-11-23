@@ -1,4 +1,4 @@
-function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta)
+function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy)
 
 totDest = length(destinations);
 totNodes = length(nodes.id);
@@ -25,6 +25,7 @@ gVeh = floor(rc_dt/dt);
 %betas
 betaUturn=0;
 betaTT=-1;
+betaHierarchy=-1;
 
 switch rc_agg
     case 'first'
@@ -98,16 +99,17 @@ for d_index=1:totDest
                             
                             %extra penalties depending on specific turn
                             %properties
-                            val_uturn=betaUturn*(strN(l_in)==endN(l_out));
+                            val_extra=betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
+                            
                             
                             time=timeSteps(min(totT+1,t+tVeh))+simTT(l_out,min(totT+1,t+tVeh));
                             if time>=timeSteps(end)
-                                val =(timeSteps(end)-time+util_map(l_out,end))+val_uturn;
+                                val =(timeSteps(end)-time+util_map(l_out,end))+val_extra;
                                 P(l,i)=exp(val/theta);
                             else
                                 t1 = min(totT+1,max(t+tVeh+1,1+floor(time/dt)));
                                 t2 = min(totT+1,t1+1);
-                                val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1))+val_uturn;
+                                val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1))+val_extra;
                                 P(l,i)=exp(val/theta);
                             end
                         end
@@ -141,13 +143,10 @@ end
         %first do the last time slice
         
         %here static part of Recursive Logit
-        UTurn=zeros(totLinks,totLinks);
-        for l=1:totLinks
-        UTurn(l,[links.fromNode]==links.toNode(l)&[links.toNode]==links.fromNode(l))=1; %check if u-turn
-        end
+
         %compute the deterministic part
         TT=(repmat(endN,1,totLinks)==repmat(strN',totLinks,1)).*repmat(simTT(:,end)',totLinks,1);
-        v = betaTT*TT+betaUturn*UTurn;
+        v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy;
         %compute M (connectivity & travel time)
         M = exp(1/theta*v).*(TT>0);
         %compute b (destinations)

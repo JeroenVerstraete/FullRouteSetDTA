@@ -70,14 +70,35 @@ gap_TF = inf;
 gap_flow = inf;
 TF = [];
 
+UTurn=zeros(totLinks,totLinks);
+connectionMatrix =zeros(totLinks,totLinks);
+for l=1:totLinks
+    connectionMatrix(l,[links.fromNode]==links.toNode(l))=1; %check if connection is possible
+    UTurn(l,[links.fromNode]==links.toNode(l)&[links.toNode]==links.fromNode(l))=1; %check if u-turn
+end
+
+UTurn=sparse(UTurn);
+
+if isempty((find(strcmp(links.Properties.VariableNames, 'level'))))
+    %level1 is laagste level. snelweg heeft de hoogste level
+    links=hierarchy(links);
+end 
+
+Hierarchy = zeros(totLinks,totLinks);
+[linksFrom,linksTo]=find(connectionMatrix);
+goingDown=links.level(linksFrom)>links.level(linksTo);
+Hierarchy(linksFrom(goingDown)+totLinks*(linksTo(goingDown)-1))=1;
+Hierarchy=sparse(Hierarchy);
+%Hierachy only for going down!
+
 %initialize the turning fractions (both first and last give the same result)
-TF_new = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta);
+TF_new = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
 
 [flows_up_prev] = cvn2flows(sum(cvn_up,3),dt);
 
 %MAIN LOOP: iterate until convergence is reached or maximum number of
 %iterations is reached
-while it < maxIt && gap > 10^-6 
+while it < maxIt && gap_flow > 10^-6 
     it = it+1;
     gap_TF = 0;
     
@@ -109,7 +130,7 @@ while it < maxIt && gap > 10^-6
     
     %Compute new turning fractions via all-or-nothing assignment
     %and compute convergence gap
-    [TF_new,gap,gap_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta);
+    [TF_new,gap,gap_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
     
     gap_flow = sum(sum(abs(flows_up-flows_up_prev)));
     %plot convergence in function of computation time
