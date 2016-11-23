@@ -18,9 +18,9 @@ timeRC = rc_dt*[0:1:totT];
 timeRC(timeRC>timeSteps(end))=[];
 
 gap = zeros(totLinks,totT+1);
-gap_dt = inf;
+gap_dt = 0;
 gap_s = zeros(totLinks,totT+1);
-gap_dt_s = inf;
+gap_dt_s = 0;
 act_t = false(1,totT+1);
 gVeh = floor(rc_dt/dt);
 
@@ -63,6 +63,9 @@ fracVeh = timeVeh/dt-tVeh;
 for d_index=1:totDest
     %use the arrival map order to compute the maximum perceived utility
     util_map = max_perc_util_d(d_index);
+    if nargout>1
+        arr_map_d(d_index);
+    end
     
     %compute update of the turning fractions based on the utiliy values
     for n=1:totNodes
@@ -84,6 +87,7 @@ for d_index=1:totDest
                     act_t(min(totT+1,t+tVeh))=true;
 
                     %compute the turn probabilities
+
                     P=zeros(length(incomingLinks),length(outgoingLinks));
                     
                     for l=1:length(incomingLinks)
@@ -108,6 +112,7 @@ for d_index=1:totDest
                                 val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1))+val_uturn;
                                 P(l,i)=exp(val/theta);
                             end
+
                         end
                     end
 
@@ -122,8 +127,14 @@ for d_index=1:totDest
         end
     end
     
-%     gap_dt=gap_dt+sum(sum(gap(:,2:end).*diff(cvn_up(:,:,d_index),1,2)));
-%     gap_dt_s=gap_dt_s+sum(sum(gap_s(:,2:end).*diff(cvn_up(:,:,d_index),1,2)));
+    if nargout>1
+        arr_map_d(d_index);
+        gap_dt=gap_dt+sum(sum(gap(:,2:end).*diff(cvn_up(:,:,d_index),1,2)));
+        gap_dt_s=gap_dt_s+sum(sum(gap_s(:,2:end).*diff(cvn_up(:,:,d_index),1,2)));
+    else
+        gap = inf;
+        gap_s = inf;
+    end  
 end
 % fprintf('\n');
 
@@ -148,16 +159,16 @@ end
         
         %next do the others in upwind order
         for t=totT:-1:1
-            for l=1:totLinks 
-                if any(endN(l)==destinations)
-                    if endN(l)~=d
-                        util_map(l,t)=-inf; % andere destination, dus niet te bereiken
+            for l_in=1:totLinks
+                if any(endN(l_in)==destinations)
+                    if endN(l_in)~=d
+                        util_map(l_in,t)=-inf;
                     else
-                        util_map(l,t)=-t*dt;
+                        util_map(l_in,t)=-t*dt;
                     end
                     continue; %direct naar volgende iteratie
                 end
-                outgoingLinks = find(strN==endN(l));
+                outgoingLinks = find(strN==endN(l_in));
                 for l_out=outgoingLinks'
                     if isinf(util_map(l_out,end)) %als link gaat naar iets waaruit destination niet te bereiken is
                         continue;
@@ -166,14 +177,71 @@ end
                     if time>=timeSteps(end) %extrapoleren tussen Z waarden (exp)
                         util_map(l,t)=util_map(l,t)+exp((timeSteps(end)-time+util_map(l_out,end))/theta);
                     else %interpoleren
+
                         t1 = min(totT+1,max(t+1,1+floor(time/dt)));
                         t2 = min(totT+1,t1+1);
                         val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
-                        util_map(l,t)=util_map(l,t)+exp(val/theta);
+                        util_map(l_in,t)=util_map(l_in,t)+exp(val/theta);
                     end
                 end
                 util_map(l,t) = theta*log(util_map(l,t)); %terug omzetten naar V
             end
         end
     end
+
+%Nested function used for finding the destination based arrival map
+    function [arr_map,parent] = arr_map_d(d_index)
+        d=destinations(d_index);
+        netCostMatrix=sparse(endN,strN,simTT(:,end),totNodes,totNodes);
+        [par, dist] = dijkstra(netCostMatrix, d);
+        parent = zeros(totNodes,totT+1);
+        parent(:,totT+1) = par;
+        arr_map = zeros(totNodes,totT+1);
+        arr_map(:,totT+1)=dist+dt*totT;
+        for t=totT+1:-1:1
+            for n=1:totNodes
+                if any(n==destinations)
+                    if n~=d
+                        arr_map(n,t)=inf;
+                    else
+                        arr_map(n,t)=(t-1)*dt;
+                    end
+                    continue;
+                end
+                outgoingLinks = find(strN==n);
+                arr = inf;
+                min_phi = inf;
+                for l=outgoingLinks'
+                    time=timeSteps(t)+simTT(l,t);
+                    if time>=timeSteps(end)
+                        val=time-dt*totT+arr_map(endN(l),end);
+                    else
+                        t1 = min(totT+1,max(t+1,1+floor(time/dt)));
+                        t2 = min(totT+1,t1+1);
+                        val = arr_map(endN(l),t1,:)+max(0,(1+time/dt-t1))*(arr_map(endN(l),t2,:)-arr_map(endN(l),t1,:));
+                    end
+                    if cvn_up(l,t,d_index)>0
+                        gap(l,t) = gap(l,t) + val;
+                        phi = theta*log(cvn_up(l,t,d_index)-cvn_up(l,max(t-1,1),d_index))+val-(t-1)*dt;
+                        gap_s(l,t) = phi;
+                        if phi<=min_phi
+                            min_phi=phi;
+                        end
+                    end
+                    if val<=arr
+                        arr=val;
+                        parent(n,t) = endN(l);
+                    end
+                end
+                for l=outgoingLinks'
+                    if cvn_up(l,t,d_index)>0
+                        gap(l,t) = gap(l,t) - arr;
+                        gap_s(l,t) = gap_s(l,t)-min_phi;
+                    end
+                end
+                arr_map(n,t)=arr;
+            end
+        end
+    end
+
 end
