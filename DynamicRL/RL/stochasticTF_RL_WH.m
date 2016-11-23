@@ -1,4 +1,4 @@
-function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta)
+function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_WH(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta)
 
 totDest = length(destinations);
 totNodes = length(nodes.id);
