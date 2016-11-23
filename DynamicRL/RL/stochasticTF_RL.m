@@ -63,9 +63,6 @@ fracVeh = timeVeh/dt-tVeh;
 for d_index=1:totDest
     %use the arrival map order to compute the maximum perceived utility
     util_map = max_perc_util_d(d_index);
-    if nargout>1
-        arr_map_d(d_index);
-    end
     
     %compute update of the turning fractions based on the utiliy values
     for n=1:totNodes
@@ -239,7 +236,7 @@ end
                         t2 = min(totT+1,t1+1);
                         val = arr_map(endN(l),t1,:)+max(0,(1+time/dt-t1))*(arr_map(endN(l),t2,:)-arr_map(endN(l),t1,:));
                     end
-                    if cvn_up(l,t,d_index)>0
+                    if cvn_up(l,t,d_index)-cvn_up(l,max(t-1,1),d_index)>0
                         gap(l,t) = gap(l,t) + val;
                         phi = 1/mu*log(cvn_up(l,t,d_index)-cvn_up(l,max(t-1,1),d_index))+val-(t-1)*dt;
                         gap_s(l,t) = phi;
@@ -253,7 +250,7 @@ end
                     end
                 end
                 for l=outgoingLinks'
-                    if cvn_up(l,t,d_index)>0
+                    if cvn_up(l,t,d_index)-cvn_up(l,max(t-1,1),d_index)>0
                         gap(l,t) = gap(l,t) - arr;
                         gap_s(l,t) = gap_s(l,t)-min_phi;
                     end
