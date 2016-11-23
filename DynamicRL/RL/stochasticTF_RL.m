@@ -1,4 +1,6 @@
 function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta)
+% bepaalt turning fracties
+% TF=[numNodes, totT+1, totDest]
 
 totDest = length(destinations);
 totNodes = length(nodes.id);
@@ -21,6 +23,10 @@ gap_s = zeros(totLinks,totT+1);
 gap_dt_s = inf;
 act_t = false(1,totT+1);
 gVeh = floor(rc_dt/dt);
+
+%betas
+betaTT=-1;
+betaUturn=0;
 
 switch rc_agg
     case 'first'
@@ -55,7 +61,6 @@ tVeh = floor(timeVeh/dt);
 fracVeh = timeVeh/dt-tVeh;
 
 for d_index=1:totDest
-%     fprintf('.');
     %use the arrival map order to compute the maximum perceived utility
     util_map = max_perc_util_d(d_index);
     
@@ -69,40 +74,50 @@ for d_index=1:totDest
             %no update is required for a non divergent node
             for t=1:totT
                 TF{n,t,d_index}=ones(max(1,length(incomingLinks)),max(1,length(outgoingLinks)));
-            end
+            end            
         else
             for t=1:totT
-                %update all turning fractions within the route choice
+                %update all turning fractions
                 %interval by same value
                 if timeSteps(t)>=timeRC(min(length(timeRC),next_rc))
                     next_rc = next_rc+1;
                     act_t(min(totT+1,t+tVeh))=true;
-                    
+
                     %compute the turn probabilities
-                    P=zeros(1,length(outgoingLinks));
-                    for i=1:length(outgoingLinks)
-                        l_out=outgoingLinks(i);
-                        if isinf(util_map(l_out,end))
-                            continue;
-                        end
-                        time=timeSteps(min(totT+1,t+tVeh))+simTT(l_out,min(totT+1,t+tVeh));
-                        if time>=timeSteps(end)
-                            P(i)=exp((timeSteps(end)-time+util_map(l_out,end))/theta);
-                        else
-                            t1 = min(totT+1,max(t+tVeh+1,1+floor(time/dt)));
-                            t2 = min(totT+1,t1+1);
-                            val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
-                            P(i)=exp(val/theta);
+                    P=zeros(length(incomingLinks),length(outgoingLinks));
+                    
+                    for l=1:length(incomingLinks)
+                        l_in=incomingLinks(l);
+                        for i=1:length(outgoingLinks)
+                            l_out=outgoingLinks(i);
+                            if isinf(util_map(l_out,end))
+                                continue;
+                            end
+                            
+                            %extra penalties depending on specific turn
+                            %properties
+                            val_uturn=betaUturn*(strN(l_in)==endN(l_out));
+                            
+                            time=timeSteps(min(totT+1,t+tVeh))+simTT(l_out,min(totT+1,t+tVeh));
+                            if time>=timeSteps(end)
+                                val =(timeSteps(end)-time+util_map(l_out,end))+val_uturn;
+                                P(l,i)=exp(val/theta);
+                            else
+                                t1 = min(totT+1,max(t+tVeh+1,1+floor(time/dt)));
+                                t2 = min(totT+1,t1+1);
+                                val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1))+val_uturn;
+                                P(l,i)=exp(val/theta);
+                            end
                         end
                     end
+
                 end
-                
                 %updating of the turning fractions
                 TF{n,t,d_index}=zeros(max(1,length(incomingLinks)),length(outgoingLinks));
                 if sum(P)==0
                     continue;
                 end
-                TF{n,t,d_index}=repmat(P/sum(P),max(1,length(incomingLinks)),1);
+                TF{n,t,d_index}=P/sum(P);
             end
         end
     end
@@ -119,10 +134,8 @@ end
         %first do the last time slice
         
         %here static part of Recursive Logit
-        
-        %compute the deterministic part
         TT=(repmat(endN,1,totLinks)==repmat(strN',totLinks,1)).*repmat(simTT(:,end)',totLinks,1);
-        v = -TT;
+        v = betaTT*TT;
         %compute M (connectivity & travel time)
         M = exp(1/theta*v).*(TT>0);
         %compute b (destinations)
@@ -131,35 +144,35 @@ end
         %compute z (exponent of value function)
         z = (eye(length(b)) -M)\b;
         %compute utility map
-        util_map(:,totT+1)=theta*log(z);
+        util_map(:,totT+1)=theta*log(z); %terug omzetten naar V
         
         %next do the others in upwind order
         for t=totT:-1:1
-            for l=1:totLinks
+            for l=1:totLinks 
                 if any(endN(l)==destinations)
                     if endN(l)~=d
-                        util_map(l,t)=-inf;
+                        util_map(l,t)=-inf; % andere destination, dus niet te bereiken
                     else
                         util_map(l,t)=-t*dt;
                     end
-                    continue;
+                    continue; %direct naar volgende iteratie
                 end
                 outgoingLinks = find(strN==endN(l));
                 for l_out=outgoingLinks'
-                    if isinf(util_map(l_out,end))
+                    if isinf(util_map(l_out,end)) %als link gaat naar iets waaruit destination niet te bereiken is
                         continue;
                     end
-                    time=timeSteps(t)+simTT(l_out,t);
-                    if time>=timeSteps(end)
+                    time=timeSteps(t)+simTT(l_out,t); %toekomende waarde (tijd)
+                    if time>=timeSteps(end) %extrapoleren tussen Z waarden (exp)
                         util_map(l,t)=util_map(l,t)+exp((timeSteps(end)-time+util_map(l_out,end))/theta);
-                    else
+                    else %interpoleren
                         t1 = min(totT+1,max(t+1,1+floor(time/dt)));
                         t2 = min(totT+1,t1+1);
                         val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
                         util_map(l,t)=util_map(l,t)+exp(val/theta);
                     end
                 end
-                util_map(l,t) = theta*log(util_map(l,t));
+                util_map(l,t) = theta*log(util_map(l,t)); %terug omzetten naar V
             end
         end
     end

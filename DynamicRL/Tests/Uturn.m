@@ -1,37 +1,3 @@
-%% Tutorial 13: Introducing implicit stochastic equilibrium routing with the dynamic recursive logit 
-
-%% Disclaimer
-% This file is part of the matlab package for dynamic traffic assignments 
-% developed by the KULeuven. 
-%
-% Copyright (C) 2016  Himpe Willem, Leuven, Belgium
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% any later version.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% 
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%
-% More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
-% or contact: willem.himpe {@} kuleuven.be
-
-%% Introduction
-% In this tutorial a basic algorithm is implemented to find a stochastic
-% user equilibrium in a dynamic traffic assignment. The algorithm is based
-% on an implicit routing procedure. This requires formulating a topological
-% order of nodes to describe all available route alternatives without 
-% circles. The topological order based on the shortest travel times has a 
-% large influence on the convergence and solution of the algorithm. 
-%
-
-%add these folders to the search path
 % addpath('../MatlabTrafficToolbox/Dynamic Traffic Assignment','../MatlabTrafficToolbox/Visualization Tools','../MatlabTrafficToolbox/Network Data')
 % javaclasspath('../MatlabTrafficToolbox/Dynamic Traffic Assignment');
 
@@ -44,41 +10,11 @@ clc
 %close all windows
 close all
 
-display('<<<Introducing implicit stochastic equilibrium routing>>>')
-
 %% Loading the data
-% The network represents a simple two-route network with a bottleneck on 
-% the shortest alternative. The longer alternative has only a single link 
-% which is longer. This link is the first link of the alternative. 
-%
 
-% Network and demand data
+load dym_uturn.mat
 load net6.mat
-% load rotterdam_my_OD
-% links = table;
-% links.id = [1:length([data.link.startNode])]';
-% links.fromNode = [data.link.startNode]';
-% links.toNode = [data.link.endNode]';
-% links.length = [data.link.length]';
-% links.freeSpeed = [data.link.freeSpeed]';
-% links.capacity = [data.link.capacity]';
-% links.kJam = [data.link.kJam]';
-% 
-% nodes = table;
-% nodes.id = [1:length([data.node.id])]';
-% nodes.xco = [data.node.x]';
-% nodes.yco = [data.node.y]';
-% 
-% ODmatrices = data.ODmatrices;
-% timeSeries = data.timeslices;
-% 
-% links.freeSpeed=links.length./max(0.01,links.length./links.freeSpeed);
-
-% Plot the network
 plotNetwork(nodes,links,true,[]);
-
-% Displays the link properties of the alternative
-% links(7:10,:)
 
 %% Setup the simulation
 % Before the simulation can be run the time interval has to be set and the
@@ -93,18 +29,11 @@ totT = round(1.5/dt);
 [ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
 
 %% Setup the dynamic equilibrium simulation
-% The routing behaviour in the stochastic routing behaviour is aggregated 
-% over larger time intervals to speed up computation. It is believed that
-% the route choice time intervals varies with a much lower frequency in 
-% reality than the typical interval of a simulation. The routing is
-% described by a logit model with a scaling parameter to capture the
-% variance of the error term.
-%
 
 %time interval for the route choice
 rc_dt = dt;
 %maximum number of iterations
-max_it = 100;
+max_it = 10;
 %scaling of the updates over iterations (<1)
 alpha = 0.5;
 %scaling of the utility (logit)
@@ -114,15 +43,6 @@ theta = 0.010;
 tic
 [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta);
 toc
-
-
-% %%
-% [simDensity] = cvn2dens(sum(cvn_up,3),sum(cvn_down,3),totT,links);
-% [simDensity] = cvn2dens(cvn_up(:,:,1),cvn_down(:,:,1),totT,links);
-% fRate = inf;
-% animateSimulation(nodes,links,simDensity(:,1:1:end),dt*[0:1:totT],fRate); %only shows every 10th frame
-% 
-% break
 
 %% Transform CVN values to travel times
 % The upstream and dowsntream CVN functions of the link transmission model

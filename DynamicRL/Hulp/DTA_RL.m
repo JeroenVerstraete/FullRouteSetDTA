@@ -94,8 +94,9 @@ while it < maxIt && gap > 10^-6
             end
         end
     end
-    sp=[TF{2,:,1}];
-    figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+    sp=[TF{4,:,1}];
+    figure(10);plot(dt*[0:totT-1],sp(1:4:end),'r',dt*[0:totT-1],sp(3:4:end),'b');
+    drawnow
     
     %calculate new flows
     [cvn_up,cvn_down] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
