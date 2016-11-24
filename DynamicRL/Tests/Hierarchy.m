@@ -9,7 +9,7 @@ clc
 close all
 
 %% Loading the data
-load dym_uturn.mat
+load dym_hierarchy.mat
 plotNetwork(nodes,links,true,[]);
 
 %% Setup the simulation

@@ -23,9 +23,9 @@ act_t = false(1,totT+1);
 gVeh = floor(rc_dt/dt);
 
 %betas
-betaUturn=0;
+betaUturn=-100;
 betaTT=-1;
-betaHierarchy=-1;
+betaHierarchy=0;
 
 switch rc_agg
     case 'first'
