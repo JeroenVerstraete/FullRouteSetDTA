@@ -91,10 +91,10 @@ LL = zeros(numL,numL);
 %aanvullen met 1/0 voor O en D
 DL = zeros(numD,numL);
 OL = zeros(numO,numL);
-for l=1:numO
-    OL(l,origins(l)==links.fromNode)=1; % eerste numO links zijn de Origins, 
-    %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
-end
+% for l=1:numO
+%     OL(l,origins(l)==links.fromNode)=1; % eerste numO links zijn de Origins, 
+%     %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
+% end
 
 connectionMatrix=[connectionMatrix;OL];
 

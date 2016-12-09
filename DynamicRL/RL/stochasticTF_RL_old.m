@@ -1,5 +1,4 @@
-function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy)
-%shortest path utility map
+function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_old(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy)
 
 totDest = length(destinations);
 totNodes = length(nodes.id);
@@ -97,28 +96,20 @@ for d_index=1:totDest
                             if isinf(util_map(l_out,end))
                                 continue;
                             end                            
-                            
+                            %extra penalties depending on specific turn
+                            %properties
+                            val_extra=betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
+                                                        
                             time=timeSteps(min(totT+1,t+tVeh))+simTT(l_out,min(totT+1,t+tVeh));
-                            
-                            %val=interpoleren+TT+penalties                    
-                            
-                            %interpolatie                                                  
                             if time>=timeSteps(end)
-                                val =util_map(l_out,end);
+                                val =(timeSteps(end)-time+util_map(l_out,end))+val_extra;
+                                P(l,i)=exp(val/theta);
                             else
                                 t1 = min(totT+1,max(t+tVeh+1,1+floor(time/dt)));
                                 t2 = min(totT+1,t1+1);
-                                
-                                val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
+                                val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1))+val_extra;
+                                P(l,i)=exp(val/theta);
                             end
-                            
-                            %TT
-                            val = val + betaTT * simTT(l_out,min(totT+1,t+tVeh));
-                            
-                            % penalties
-                            val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
-                            
-                            P(l,i)=exp(mu*val); %not normalized
                         end
                     end
                 end
@@ -155,14 +146,14 @@ end
         TT=(repmat(endN,1,totLinks)==repmat(strN',totLinks,1)).*repmat(simTT(:,end)',totLinks,1);
         v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy;
         %compute M (connectivity & travel time)
-        M = exp(mu*v).*(TT>0);
+        M = exp(1/theta*v).*(TT>0);
         %compute b (destinations)
         b=zeros(totLinks,1);
-        b(endN==d)=1;
+        b(endN==d)=exp(-1/theta*(totT+1)*dt);
         %compute z (exponent of value function)
         z = (eye(length(b)) -M)\b;
         %compute utility map
-        util_map(:,totT+1)=1/mu*log(z);
+        util_map(:,totT+1)=theta*log(z);
         
         %next do the others in upwind order
         for t=totT:-1:1
@@ -171,7 +162,7 @@ end
                     if endN(l_in)~=d
                         util_map(l_in,t)=-inf;
                     else
-                        util_map(l_in,t)=0;
+                        util_map(l_in,t)=-t*dt;
                     end
                     continue;
                 end
@@ -181,32 +172,19 @@ end
                         continue;
                     end
                     time=timeSteps(t)+simTT(l_out,t);
-                    
-                    %val=interpoleren+TT+penalties                    
-                    %interpolatie
                     if time>=timeSteps(end)
-                        val = util_map(l_out,end);
+                        val = (timeSteps(end)-time+util_map(l_out,end));
+                        util_map(l_in,t)=util_map(l_in,t)+exp(val/theta);
                     else
                         t1 = min(totT+1,max(t+1,1+floor(time/dt)));
-                        t2 = min(totT+1,t1+1);  
-                        
-                        val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1)); % 1+time/dt-t1 niet lager dan 1 hier
-                        %als lager dan 1, dan zou het moeten interpoleren
-                        %met waarde uit zelfde tijdslaag
+                        t2 = min(totT+1,t1+1);             
+                        val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
+                        util_map(l_in,t)=util_map(l_in,t)+exp(val/theta);
                     end
-                    
-                    %TT                   
-                    val = val + betaTT * simTT(l_out,t);
-                    
-                    % penalties
-                    val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
-                                        
-                    util_map(l_in,t)=util_map(l_in,t)+exp(mu*val);
                 end
-                util_map(l_in,t) = 1/mu*log(util_map(l_in,t));
+                util_map(l_in,t) = theta*log(util_map(l_in,t));
             end
         end
-%         util_map(:,197:201)=util_map(:,192:196);
     end
 
 %Nested function used for finding the destination based arrival map
@@ -242,7 +220,7 @@ end
                     end
                     if cvn_up(l,t,d_index)>0
                         gap(l,t) = gap(l,t) + val;
-                        phi = 1/mu*log(cvn_up(l,t,d_index)-cvn_up(l,max(t-1,1),d_index))+val-(t-1)*dt;
+                        phi = theta*log(cvn_up(l,t,d_index)-cvn_up(l,max(t-1,1),d_index))+val-(t-1)*dt;
                         gap_s(l,t) = phi;
                         if phi<=min_phi
                             min_phi=phi;

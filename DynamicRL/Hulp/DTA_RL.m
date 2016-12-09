@@ -96,9 +96,11 @@ TF_new = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_
 
 [flows_up_prev] = cvn2flows(sum(cvn_up,3),dt);
 
+
+
 %MAIN LOOP: iterate until convergence is reached or maximum number of
 %iterations is reached
-while it < maxIt && gap_flow > 10^-6 
+while it < maxIt && gap_flow > 10^-4
     it = it+1;
     gap_TF = 0;
     
@@ -106,6 +108,7 @@ while it < maxIt && gap_flow > 10^-6
     if isempty(TF)
         TF = TF_new;
     else
+%         alpha=1/it; %MSA
         for n = 1:totNodes
             for t = 1:totT
                 for d= 1:totDest
@@ -115,8 +118,8 @@ while it < maxIt && gap_flow > 10^-6
             end
         end
     end
-    sp=[TF{2,:,1}];
-    figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+%     sp=[TF{2,:,1}];
+%     figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
     drawnow
     
     %calculate new flows
@@ -135,6 +138,8 @@ while it < maxIt && gap_flow > 10^-6
     gap_flow = sum(sum(abs(flows_up-flows_up_prev)));
     %plot convergence in function of computation time
     figure(h) 
+    gap
+    gap_flow
     hold on
     time=cputime-start_time;
     a=semilogy(time,gap,'r.');
@@ -146,9 +151,9 @@ end
 
 %Check for number of iterations until convergence
 if it >= maxIt 
-    disp(['Maximum Iteration limit reached: ', num2str(maxIt), ' Gap: ', num2str(gap_flow)]);
+    disp(['Maximum Iteration limit reached: ', num2str(maxIt), ' Gap_flow: ', num2str(gap_flow), ' Gap: ', num2str(gap)]);
 else
-    disp(['Convergence reached in iteration ', num2str(it), ' Gap: ', num2str(gap_flow)]);
+    disp(['Convergence reached in iteration ', num2str(it), ' Gap: ', num2str(gap_flow), ' Gap: ', num2str(gap)]);
 end
 
 end

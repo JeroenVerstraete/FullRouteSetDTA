@@ -26,7 +26,7 @@ totT = round(1.5/dt);
 %time interval for the route choice
 rc_dt = dt;
 %maximum number of iterations
-max_it = 100;
+max_it = 20;
 %scaling of the updates over iterations (<1)
 alpha = 0.5;
 %scaling of the utility (logit)

@@ -117,10 +117,10 @@ toc
 
 
 % %%
-% [simDensity] = cvn2dens(sum(cvn_up,3),sum(cvn_down,3),totT,links);
-% [simDensity] = cvn2dens(cvn_up(:,:,1),cvn_down(:,:,1),totT,links);
-% fRate = inf;
-% animateSimulation(nodes,links,simDensity(:,1:1:end),dt*[0:1:totT],fRate); %only shows every 10th frame
+[simDensity] = cvn2dens(sum(cvn_up,3),sum(cvn_down,3),totT,links);
+[simDensity] = cvn2dens(cvn_up(:,:,1),cvn_down(:,:,1),totT,links);
+fRate = inf;
+animateSimulation(nodes,links,simDensity(:,1:1:end),dt*[0:1:totT],fRate); %only shows every 10th frame
 % 
 % break
 
