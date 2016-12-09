@@ -1,0 +1,230 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>the3pathproblem</title><meta name="generator" content="MATLAB 8.6"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2016-12-09"><meta name="DC.source" content="the3pathproblem.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">add path</a></li><li><a href="#3">In the first network, the node where route 2 and 3 split, is close to the destination</a></li><li><a href="#4">Setup the simulation</a></li><li><a href="#5">Setup the dynamic equilibrium simulation</a></li><li><a href="#6">Visualize the split rates at the diverge</a></li><li><a href="#7">Change the intersection node more to the origin:</a></li></ul></div><pre class="codeinput"><span class="comment">% A classic example in traffic assignments is the so called 3 route</span>
+<span class="comment">% problem.</span>
+
+<span class="comment">% Here we will discus how RL behavives in these curcumstances.</span>
+</pre><h2>add path<a name="2"></a></h2><p>addpath('../MatlabTrafficToolbox/Dynamic Traffic Assignment','../MatlabTrafficToolbox/Visualization Tools','../MatlabTrafficToolbox/Network Data') javaclasspath('../MatlabTrafficToolbox/Dynamic Traffic Assignment');</p><pre class="codeinput">javaclasspath(<span class="string">'/MatlabTrafficToolbox/Dynamic Traffic Assignment'</span>)
+addpath(genpath(pwd))
+
+clear
+clc
+close <span class="string">all</span>
+</pre><h2>In the first network, the node where route 2 and 3 split, is close to the destination<a name="3"></a></h2><pre class="codeinput">load <span class="string">dym_3path.mat</span>
+plotNetwork(nodes,links,true,[]);
+
+<span class="comment">%special to this network is the identical cost for each route</span>
+plotLoadedLinks(nodes,links,links.length,true,[],1,[]);
+</pre><img vspace="5" hspace="5" src="the3pathproblem_01.png" alt=""> <img vspace="5" hspace="5" src="the3pathproblem_02.png" alt=""> <h2>Setup the simulation<a name="4"></a></h2><pre class="codeinput"><span class="comment">%setup the time interval and total number of time steps</span>
+dt = 0.001;
+totT = round(2/dt);
+
+<span class="comment">%build the full ODmatrix</span>
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+</pre><h2>Setup the dynamic equilibrium simulation<a name="5"></a></h2><pre class="codeinput"><span class="comment">%time interval for the route choice</span>
+rc_dt = dt;
+<span class="comment">%maximum number of iterations</span>
+max_it = 20;
+<span class="comment">%scaling of the updates over iterations (&lt;1)</span>
+alpha = 0.5;
+<span class="comment">%scaling of the utility (logit)</span>
+mu = 1;
+
+<span class="comment">%run DTA with deterministic route choice and MSA averaging</span>
+[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,mu);
+</pre><pre class="codeoutput">
+gap =
+
+   2.1852e-13
+
+
+gap_flow =
+
+   9.9083e+06
+
+
+gap =
+
+   2.1852e-13
+
+
+gap_flow =
+
+     0
+
+Convergence reached in iteration 2 Gap: 0 Gap: 2.1852e-13
+</pre><img vspace="5" hspace="5" src="the3pathproblem_03.png" alt=""> <h2>Visualize the split rates at the diverge<a name="6"></a></h2><p>The following lines of code visualize the splitting rates at the first diverge.</p><pre class="codeinput">sp=[TF{2,:,1}];
+figure(10);plot(dt*[0:totT-1],sp(1:2:end),<span class="string">'r'</span>,dt*[0:totT-1],sp(2:2:end),<span class="string">'b'</span>);
+grid <span class="string">on</span>;
+legend(<span class="string">'fraction using the top road'</span>, <span class="string">'fraction using the 2 routes'</span>);
+</pre><img vspace="5" hspace="5" src="the3pathproblem_04.png" alt=""> <h2>Change the intersection node more to the origin:<a name="7"></a></h2><pre class="codeinput">load <span class="string">dym_3path2.mat</span>
+plotNetwork(nodes,links,true,[]);
+<span class="comment">%special to this network is the identical cost for each route</span>
+plotLoadedLinks(nodes,links,links.length,true,[],1,[]);
+</pre><img vspace="5" hspace="5" src="the3pathproblem_05.png" alt=""> <img vspace="5" hspace="5" src="the3pathproblem_06.png" alt=""> <pre class="codeinput">[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,mu);
+
+sp=[TF{2,:,1}];
+figure(10);plot(dt*[0:totT-1],sp(1:2:end),<span class="string">'r'</span>,dt*[0:totT-1],sp(2:2:end),<span class="string">'b'</span>);
+grid <span class="string">on</span>;
+legend(<span class="string">'fraction using the top road'</span>, <span class="string">'fraction using the 2 routes'</span>);
+</pre><pre class="codeoutput">
+gap =
+
+    5.5171
+
+
+gap_flow =
+
+   9.9222e+06
+
+
+gap =
+
+    5.5171
+
+
+gap_flow =
+
+     0
+
+Convergence reached in iteration 2 Gap: 0 Gap: 5.5171
+</pre><img vspace="5" hspace="5" src="the3pathproblem_07.png" alt=""> <img vspace="5" hspace="5" src="the3pathproblem_08.png" alt=""> <p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+% A classic example in traffic assignments is the so called 3 route
+% problem.
+
+% Here we will discus how RL behavives in these curcumstances.
+
+%% add path
+% addpath('../MatlabTrafficToolbox/Dynamic Traffic Assignment','../MatlabTrafficToolbox/Visualization Tools','../MatlabTrafficToolbox/Network Data')
+% javaclasspath('../MatlabTrafficToolbox/Dynamic Traffic Assignment');
+
+javaclasspath('/MatlabTrafficToolbox/Dynamic Traffic Assignment')
+addpath(genpath(pwd))
+
+clear
+clc
+close all
+
+%% In the first network, the node where route 2 and 3 split, is close to the destination
+load dym_3path.mat
+plotNetwork(nodes,links,true,[]);
+
+%special to this network is the identical cost for each route
+plotLoadedLinks(nodes,links,links.length,true,[],1,[]);
+
+%% Setup the simulation
+
+%setup the time interval and total number of time steps
+dt = 0.001; 
+totT = round(2/dt);
+
+%build the full ODmatrix
+[ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
+%% Setup the dynamic equilibrium simulation
+
+%time interval for the route choice
+rc_dt = dt;
+%maximum number of iterations
+max_it = 20;
+%scaling of the updates over iterations (<1)
+alpha = 0.5;
+%scaling of the utility (logit)
+mu = 1;
+ 
+%run DTA with deterministic route choice and MSA averaging
+[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,mu);
+
+
+%% Visualize the split rates at the diverge
+% The following lines of code visualize the splitting rates at the first diverge. 
+
+sp=[TF{2,:,1}];
+figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+grid on;
+legend('fraction using the top road', 'fraction using the 2 routes');
+
+
+%% Change the intersection node more to the origin:
+load dym_3path2.mat
+plotNetwork(nodes,links,true,[]);
+%special to this network is the identical cost for each route
+plotLoadedLinks(nodes,links,links.length,true,[],1,[]);
+
+%%
+[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,mu);
+
+sp=[TF{2,:,1}];
+figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+grid on;
+legend('fraction using the top road', 'fraction using the 2 routes');
+
+##### SOURCE END #####
+--></body></html>

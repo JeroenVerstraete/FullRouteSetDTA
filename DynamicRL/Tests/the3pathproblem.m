@@ -1,3 +1,9 @@
+% A classic example in traffic assignments is the so called 3 route
+% problem.
+
+% Here we will discus how RL behavives in these curcumstances.
+
+%% add path
 % addpath('../MatlabTrafficToolbox/Dynamic Traffic Assignment','../MatlabTrafficToolbox/Visualization Tools','../MatlabTrafficToolbox/Network Data')
 % javaclasspath('../MatlabTrafficToolbox/Dynamic Traffic Assignment');
 
@@ -8,9 +14,12 @@ clear
 clc
 close all
 
-%% Loading the data
+%% In the first network, the node where route 2 and 3 split, is close to the destination
 load dym_3path.mat
 plotNetwork(nodes,links,true,[]);
+
+%special to this network is the identical cost for each route
+plotLoadedLinks(nodes,links,links.length,true,[],1,[]);
 
 %% Setup the simulation
 
@@ -33,41 +42,11 @@ alpha = 0.5;
 mu = 1;
  
 %run DTA with deterministic route choice and MSA averaging
-tic
 [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,mu);
-toc
-
-%% Transform CVN values to travel times
-% The upstream and dowsntream CVN functions of the link transmission model
-% are transformed into travel times for every link in the network. The
-% travel times are compared for the main route (from split to merge) and
-% the alternative route.
-%
-
-%calculate the simulated travel times
-[simTT] = cvn2tt(sum(cvn_up,3),sum(cvn_down,3),dt,totT,links);
-
-%visualize the travel time along the main route (from split to merge)
-[~,~,~,tt_m]=plotTT(links,1:4,simTT,dt,totT);
-title('Travel time graph main route','FontSize',14,'fontweight','b')
-%visualize the travel time along the alternative route (from split to merge)
-[~,~,~,tt_a]=plotTT(links,[1,5,6,8],simTT,dt,totT);
-title('Travel time graph alternative route','FontSize',14,'fontweight','b')
-
-%compare both travel times
-figure;
-plot(dt*[0:totT],tt_m,'b',dt*[0:totT],tt_a,'r');
-grid on
-legend('Main route','Alternative route') 
-xlabel('Time [hr]','FontSize',12);
-ylabel('Travel Time [hr]','FontSize',12);
-title('Travel time graph','FontSize',14,'fontweight','b');
 
 
 %% Visualize the split rates at the diverge
-% The following lines of code visualize the splitting rates at the diverge. 
-%
-
+% The following lines of code visualize the splitting rates at the first diverge. 
 
 sp=[TF{2,:,1}];
 figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
@@ -75,8 +54,16 @@ grid on;
 legend('fraction using the top road', 'fraction using the 2 routes');
 
 
-%% simulation
-[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
-fRate = 10; %set frame rate
-% fRate = inf; %allows the for manual control using space bar
-animateSimulation(nodes,links,simDensity(:,1:end),dt*[0:totT],fRate);
+%% Change the intersection node more to the origin:
+load dym_3path2.mat
+plotNetwork(nodes,links,true,[]);
+%special to this network is the identical cost for each route
+plotLoadedLinks(nodes,links,links.length,true,[],1,[]);
+
+%%
+[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,mu);
+
+sp=[TF{2,:,1}];
+figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+grid on;
+legend('fraction using the top road', 'fraction using the 2 routes');
