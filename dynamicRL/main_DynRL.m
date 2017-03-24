@@ -53,7 +53,7 @@ display('<<<Introducing implicit stochastic equilibrium routing>>>')
 %
 
 % Network and demand data
-load net6.mat
+load net1.mat
 % load rotterdam_my_OD
 % links = table;
 % links.id = [1:length([data.link.startNode])]';
@@ -86,8 +86,8 @@ plotNetwork(nodes,links,true,[]);
 %
 
 %setup the time interval and total number of time steps
-dt = 0.01; 
-totT = round(1.5/dt);
+dt = 0.02; 
+totT = round(2/dt);
 
 %build the full ODmatrix
 [ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
@@ -117,10 +117,11 @@ toc
 
 
 % %%
-[simDensity] = cvn2dens(sum(cvn_up,3),sum(cvn_down,3),totT,links);
-[simDensity] = cvn2dens(cvn_up(:,:,1),cvn_down(:,:,1),totT,links);
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(sum(cvn_down,3),dt);
 fRate = inf;
 animateSimulation(nodes,links,simDensity(:,1:1:end),dt*[0:1:totT],fRate); %only shows every 10th frame
+animateSimulation(nodes,links,simFlows_down,dt*[0:1:totT],fRate); %only shows every 10th frame
 % 
 % break
 
