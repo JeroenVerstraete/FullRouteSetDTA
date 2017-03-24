@@ -26,7 +26,7 @@ gVeh = floor(rc_dt/dt);
 %betas
 betaUturn=0;
 betaTT=-1;
-betaHierarchy=0;
+betaHierarchy=-0.5;
 
 switch rc_agg
     case 'first'

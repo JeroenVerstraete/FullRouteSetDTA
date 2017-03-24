@@ -16,7 +16,7 @@ plotNetwork(nodes,links,true,[]);
 
 %setup the time interval and total number of time steps
 dt = 0.01; 
-totT = round(12/dt);
+totT = round(1.5/dt);
 
 %build the full ODmatrix
 [ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
@@ -37,13 +37,18 @@ tic
 [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta);
 toc
 
+[simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
+[simFlows_down] = cvn2flows(sum(cvn_down,3),dt);
+fRate = 10;
+animateSimulation(nodes,links,simDensity(:,1:1:end),dt*[0:1:totT],fRate); %only shows every 10th frame
+animateSimulation(nodes,links,simFlows_down,dt*[0:1:totT],fRate); %only shows every 10th frame
+
 %% Transform CVN values to travel times
 % The upstream and dowsntream CVN functions of the link transmission model
 % are transformed into travel times for every link in the network. The
 % travel times are compared for the main route (from split to merge) and
 % the alternative route.
 %
-
 %calculate the simulated travel times
 [simTT] = cvn2tt(sum(cvn_up,3),sum(cvn_down,3),dt,totT,links);
 
