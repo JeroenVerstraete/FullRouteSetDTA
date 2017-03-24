@@ -38,7 +38,7 @@ it = 0;
 gap = inf;
 
 % diagonal ODmatrix =0
-ODmatrix(logical(eye(size(ODmatrix)))) = 0; 
+%ODmatrix(logical(eye(size(ODmatrix)))) = 0; 
 
 %% Init connectionmatrix/penalties
 
@@ -91,10 +91,10 @@ LL = zeros(numL,numL);
 %aanvullen met 1/0 voor O en D
 DL = zeros(numD,numL);
 OL = zeros(numO,numL);
-% for l=1:numO
-%     OL(l,origins(l)==links.fromNode)=1; % eerste numO links zijn de Origins, 
-%     %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
-% end
+ for l=1:numO
+     OL(l,origins(l)==links.fromNode)=1; % eerste numO links zijn de Origins, 
+     %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
+ end
 
 connectionMatrix=[connectionMatrix;OL];
 
@@ -133,8 +133,12 @@ while it < maxIt && gap>10^-3
     update = (newDestinationFlows - destinationFlows);
     
     %Calculate new flows
-    destinationFlows = destinationFlows + 0.5*update;%(1/(it^(2/3)))
-%     destinationFlows = destinationFlows + (1/(it^(2/3)))*update;
+    if(it==1)
+        destinationFlows=update;
+    else
+        destinationFlows = destinationFlows + 0.5*update;%(1/(it^(2/3)))
+%        destinationFlows = destinationFlows + (1/(it^(2/3)))*update;
+    end
 
     %Convergence gap
     travelCosts = calculateCostBPR(alpha,beta,sum(destinationFlows,2)',[links.length]',[links.freeSpeed]',[links.capacity]');

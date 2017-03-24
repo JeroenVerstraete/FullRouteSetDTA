@@ -1,4 +1,4 @@
-function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy)
+function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_mpu(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy)
 %shortest path utility map
 
 totDest = length(destinations);
@@ -146,7 +146,7 @@ end
 %Nested function used for finding the maximum perceived utility
     function [util_map] = max_perc_util_d(d_index)
         d=destinations(d_index);
-        util_map = zeros(totLinks,totT+1);
+        util_map = zeros(totNodes,totT+1);
         %first do the last time slice
         
         %here static part of Recursive Logit
