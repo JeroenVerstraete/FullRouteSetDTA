@@ -1,6 +1,7 @@
 function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_LT(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy)
 %shortest path utility map
 
+
 totDest = length(destinations);
 totNodes = length(nodes.id);
 totLinks = length(links.id);
@@ -172,8 +173,8 @@ end
         for t=totT:-1:1
             
             util_map(:,t)=util_map(:,t+1);
-            old_util_map=util_map(:,t);
-            while(sum(util_map(:,t)-old_util_map)>10)
+            old_util_map=ones(totLinks,1)*Inf;
+            while(max(abs((util_map(:,t)-old_util_map))./util_map(:,t))>0.01)
                 old_util_map=util_map(:,t);                
                 for l_in=1:totLinks
                     if any(endN(l_in)==destinations)
@@ -236,8 +237,8 @@ end
         arr_map(:,totT+1)=dist+dt*totT;
         for t=totT+1:-1:1
             arr_map(:,t)=arr_map(:,min(t+1,totT));
-            old_arr_map=arr_map(:,t);
-            while(sum(arr_map(:,t)-old_arr_map)>10)
+            old_arr_map=ones(totNodes,1)*Inf;
+            while(max(abs((arr_map(:,t)-old_arr_map))./arr_map(:,t))>0.01)
                 old_arr_map=arr_map(:,t);    
                 for n=1:totNodes
                     if any(n==destinations)

@@ -36,8 +36,8 @@ function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix
 % More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
 % or contact: willem.himpe {@} kuleuven.be
 
-% rl=@stochasticTF_RL_LT;
-rl=@stochasticTF_RL;
+rl=@stochasticTF_RL_LT;
+% rl=@stochasticTF_RL;
 %setup the output figure
 h = figure;
 semilogy(0,NaN);
