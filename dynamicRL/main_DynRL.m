@@ -53,7 +53,7 @@ display('<<<Introducing implicit stochastic equilibrium routing>>>')
 %
 
 % Network and demand data
-load net6.mat
+load net1.mat
 % load rotterdam_my_OD
 % links = table;
 % links.id = [1:length([data.link.startNode])]';
