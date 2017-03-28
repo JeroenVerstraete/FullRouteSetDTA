@@ -1,4 +1,4 @@
-function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,maxIt,alpha,theta,bfigure)
+function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,maxIt,alpha,theta,bfigure,large)
 
 %Method of successive averages for calculating deterministic user
 %equilibrium
@@ -36,14 +36,19 @@ function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix
 % More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
 % or contact: willem.himpe {@} kuleuven.be
 
-rl=@stochasticTF_RL_LT;
-% rl=@stochasticTF_RL;
+
 %setup the output figure
 if nargin < 12 || isempty(bfigure)
   bfigure = false;
   h = figure;
   semilogy(0,NaN);
 end
+if nargin <13 || isempty(large) || not(large)
+    rl=@stochasticTF_RL;
+else
+    rl=@stochasticTF_RL_LT;    
+end
+
 
 start_time = cputime;
 
@@ -124,9 +129,9 @@ while it < maxIt && gap_flow > 10^-4
             end
         end
     end
-    sp=[TF{2,:,1}];
-    figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
-    drawnow
+%     sp=[TF{2,:,1}];
+%     figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+%     drawnow
     
     %calculate new flows
     [cvn_up,cvn_down] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
