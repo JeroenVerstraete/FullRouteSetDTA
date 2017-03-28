@@ -36,6 +36,8 @@ function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix
 % More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
 % or contact: willem.himpe {@} kuleuven.be
 
+rl=@stochasticTF_RL_LT;
+% rl=@stochasticTF_RL;
 %setup the output figure
 if nargin < 12 || isempty(bfigure)
   bfigure = false;
@@ -96,7 +98,7 @@ Hierarchy=sparse(Hierarchy);
 %Hierachy only for going down!
 
 %initialize the turning fractions (both first and last give the same result)
-TF_new = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
+TF_new = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
 
 [flows_up_prev] = cvn2flows(sum(cvn_up,3),dt);
 
@@ -137,7 +139,7 @@ while it < maxIt && gap_flow > 10^-4
     
     %Compute new turning fractions via all-or-nothing assignment
     %and compute convergence gap
-    [TF_new,gap,gap_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
+    [TF_new,gap,gap_s] = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
     
     gap_flow = sum(sum(abs(flows_up-flows_up_prev)));
     %plot convergence in function of computation time
