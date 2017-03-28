@@ -16,7 +16,7 @@ plotNetwork(nodes,links,true,[]);
 
 %setup the time interval and total number of time steps
 dt = 0.01; 
-totT = round(12/dt);
+totT = round(2/dt);
 
 %build the full ODmatrix
 [ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
@@ -80,3 +80,7 @@ legend('fraction using the main road', 'fraction using the alternative');
 fRate = 10; %set frame rate
 % fRate = inf; %allows the for manual control using space bar
 animateSimulation(nodes,links,simDensity(:,1:end),dt*[0:totT],fRate);
+
+[simFlows] = cvn2flows(cvn_up,dt);
+fRate = Inf; %set frame rate
+animateSimulation(nodes,links,simFlows(:,1:end),dt*[1:totT],fRate);

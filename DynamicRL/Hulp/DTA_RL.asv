@@ -159,7 +159,7 @@ end
 if it >= maxIt 
     disp(['Maximum Iteration limit reached: ', num2str(maxIt), ' Gap_flow: ', num2str(gap_flow), ' Gap: ', num2str(gap)]);
 else
-    disp(['Convergence reached in iteration ', num2str(it), ' Gap_flow: ', num2str(gap_flow), ' Gap: ', num2str(gap)]);
+    disp(['Convergence reached in iteration ', num2str(it), ' Gap: ', num2str(gap_flow), ' Gap: ', num2str(gap)]);
 end
 
 end
