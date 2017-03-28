@@ -7,7 +7,8 @@ close all
 load dym_3path.mat
 plotNetwork(nodes,links,true,[]);
 
-dt = 0.002; 
+
+dt = 0.02; 
 totT = round(2/dt);
 [ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
 
