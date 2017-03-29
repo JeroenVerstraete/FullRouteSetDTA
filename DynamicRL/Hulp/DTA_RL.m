@@ -111,7 +111,7 @@ TF_new = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTu
 
 %MAIN LOOP: iterate until convergence is reached or maximum number of
 %iterations is reached
-while it < maxIt && gap_flow > 10^-4
+while it < maxIt && gap_flow > 10^-6
     it = it+1;
     gap_TF = 0;
     

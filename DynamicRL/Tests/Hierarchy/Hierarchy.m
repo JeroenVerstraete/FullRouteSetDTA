@@ -9,7 +9,9 @@ clc
 close all
 
 %% Loading the data
-load dym_hierarchy.mat
+% load dym_hierarchy.mat
+
+load Dym_simple.mat
 plotNetwork(nodes,links,true,[]);
 
 %% Setup the simulation
@@ -44,38 +46,41 @@ toc
 % the alternative route.
 %
 
-%calculate the simulated travel times
-[simTT] = cvn2tt(sum(cvn_up,3),sum(cvn_down,3),dt,totT,links);
-
-%visualize the travel time along the main route (from split to merge)
-[~,~,~,tt_m]=plotTT(links,1:6,simTT,dt,totT);
-title('Travel time graph main route','FontSize',14,'fontweight','b')
-%visualize the travel time along the alternative route (from split to merge)
-[~,~,~,tt_a]=plotTT(links,[1:3,7,8,4:6],simTT,dt,totT);
-title('Travel time graph alternative route','FontSize',14,'fontweight','b')
-
-%compare both travel times
-figure;
-plot(dt*[0:totT],tt_m,'b',dt*[0:totT],tt_a,'r');
-grid on
-legend('Main route','Alternative route') 
-xlabel('Time [hr]','FontSize',12);
-ylabel('Travel Time [hr]','FontSize',12);
-title('Travel time graph','FontSize',14,'fontweight','b');
+% %calculate the simulated travel times
+% [simTT] = cvn2tt(sum(cvn_up,3),sum(cvn_down,3),dt,totT,links);
+% 
+% %visualize the travel time along the main route (from split to merge)
+% [~,~,~,tt_m]=plotTT(links,1:6,simTT,dt,totT);
+% title('Travel time graph main route','FontSize',14,'fontweight','b')
+% %visualize the travel time along the alternative route (from split to merge)
+% [~,~,~,tt_a]=plotTT(links,[1:3,7,8,4:6],simTT,dt,totT);
+% title('Travel time graph alternative route','FontSize',14,'fontweight','b')
+% 
+% %compare both travel times
+% figure;
+% plot(dt*[0:totT],tt_m,'b',dt*[0:totT],tt_a,'r');
+% grid on
+% legend('Main route','Alternative route') 
+% xlabel('Time [hr]','FontSize',12);
+% ylabel('Travel Time [hr]','FontSize',12);
+% title('Travel time graph','FontSize',14,'fontweight','b');
 
 
 %% Visualize the split rates at the diverge
 % The following lines of code visualize the splitting rates at the diverge. 
 %
 
-
-sp=[TF{2,:,1}];
-figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
-grid on;
-legend('fraction using the main road', 'fraction using the alternative');
+% 
+% sp=[TF{2,:,1}];
+% figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+% grid on;
+% legend('fraction using the main road', 'fraction using the alternative');
 
 
 %% simulation
+
+[cvn_up,cvn_down] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
+
 [simDensity] = cvn2dens(cvn_up,cvn_down,totT,links);
 fRate = 10; %set frame rate
 % fRate = inf; %allows the for manual control using space bar
