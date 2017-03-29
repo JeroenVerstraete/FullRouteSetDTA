@@ -25,7 +25,7 @@ act_t = false(1,totT+1);
 gVeh = floor(rc_dt/dt);
 
 %betas
-betaUturn=-100;
+betaUturn=-10;
 betaTT=-1;
 betaHierarchy=-5;
 
@@ -156,6 +156,8 @@ end
         %compute the deterministic part
         TT=(repmat(endN,1,totLinks)==repmat(strN',totLinks,1)).*repmat(simTT(:,end)',totLinks,1);
         v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy;
+        vmin=min(min(v(v>-1)));
+        v=(v-ones(size(v))*(vmin+1)).*(v<0);
         %compute M (connectivity & travel time)
         M = exp(mu*v).*(TT>0);
         %compute b (destinations)
@@ -165,6 +167,8 @@ end
         z = (eye(length(b)) -M)\b;
         %compute utility map
         util_map(:,totT+1)=1/mu*log(z);
+        
+%         cond(eye(length(b)) -M)
         
         %next do the others in upwind order
         for t=totT:-1:1
@@ -206,7 +210,7 @@ end
                         end
 
                         %TT                   
-                        val = val + betaTT * simTT(l_out,t);
+                        val = val + betaTT * simTT(l_out,t) -(vmin+1);
 
                         % penalties
                         val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);

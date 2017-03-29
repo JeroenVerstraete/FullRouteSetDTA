@@ -40,7 +40,7 @@ function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix
 %setup the output figure
 if nargin < 12 || isempty(bfigure)
   bfigure = false;
-else
+elseif (bfigure)
   h = figure;
   semilogy(0,NaN);
 end
@@ -120,7 +120,7 @@ while it < maxIt && gap_flow > 10^-6
     if isempty(TF)
         TF = TF_new;
     else
-        alpha=1/it; %MSA
+%         alpha=1/it; %MSA
         for n = 1:totNodes
             for t = 1:totT
                 for d= 1:totDest
@@ -130,9 +130,11 @@ while it < maxIt && gap_flow > 10^-6
             end
         end
     end
-%     sp=[TF{2,:,1}];
-%     figure(10);plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
-%     drawnow
+    sp=[TF{6,:,1}];
+    figure;plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+    grid on;
+    legend('fraction using the main road', 'fraction using the alternative');    
+    drawnow;
     
     %calculate new flows
     [cvn_up,cvn_down] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
