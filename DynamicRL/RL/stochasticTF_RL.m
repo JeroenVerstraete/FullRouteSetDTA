@@ -107,6 +107,10 @@ for d_index=1:totDest
                                 t2 = min(totT+1,t1+1);
                                 
                                 val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
+                                
+                                if(1+round(time/dt)-t)<1
+                                    disp('<<<To large timestep>>>');
+                                end
                             end
                             
                             %TT
@@ -187,9 +191,12 @@ end
                         t1 = min(totT+1,max(t+1,1+floor(time/dt)));
                         t2 = min(totT+1,t1+1);  
                         
-                        val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1)); % 1+time/dt-t1 niet lager dan 1 hier
+                        val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1)); % 1+time/dt-t niet lager dan 1 hier
                         %als lager dan 1, dan zou het moeten interpoleren
                         %met waarde uit zelfde tijdslaag
+                        if (1+round(time/dt)-t)<1
+                            disp('<<<To large timestep MPU>>>');
+                        end
                     end
                     
                     %TT                   

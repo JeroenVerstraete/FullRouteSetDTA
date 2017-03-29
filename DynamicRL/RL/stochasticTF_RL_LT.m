@@ -107,12 +107,8 @@ for d_index=1:totDest
                             if time>=timeSteps(end)
                                 val =util_map(l_out,end);
                             else
-                                t1 = min(totT+1,max(t+tVeh+1,1+floor(time/dt)));
+                                t1 = min(totT+1,max(t+tVeh,1+floor(time/dt)));
                                 t2 = min(totT+1,t1+1);
-                                if(1+time/dt-t1<0)
-                                    t1=t;
-                                    t2=t+1;
-                                end
                                 val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
 
                             end
@@ -198,13 +194,8 @@ end
                         if time>=timeSteps(end)
                             val = util_map(l_out,end);
                         else
-                            t1 = min(totT+1,max(t+1,1+floor(time/dt)));
+                            t1 = min(totT+1,max(t,1+floor(time/dt))); %t ipv t+1
                             t2 = min(totT+1,t1+1);  
-                            
-                            if(1+time/dt-t1<0)
-                                t1=t;
-                                t2=t+1;
-                            end
                             
                             val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1)); % 1+time/dt-t1 niet lager dan 1 hier
                             %als lager dan 1, dan zou het moeten interpoleren

@@ -18,7 +18,7 @@ alpha = 0.5;
 theta = 0.010;
 
 tic
-[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta,false,false);
+[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta,false,true);
 toc
 
 sp=[TF{6,:,1}];
