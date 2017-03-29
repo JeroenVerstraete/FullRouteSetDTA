@@ -12,6 +12,9 @@ addpath(genpath(pwd))
 networks={'highway.mat';'toy_cascetta.mat';'gent.mat';'leuven.mat';'network1.mat'};
 load(networks{4})
 
+load dym_largetime;
+odmatrix=cell2mat(ODmatrices(1,1));
+
 [odmatrix,origins,destinations]=ODmatrix(odmatrix);
 %plot the network
 % plotNetwork(nodes,links,true,[]);

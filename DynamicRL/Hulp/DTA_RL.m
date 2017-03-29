@@ -40,6 +40,7 @@ function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix
 %setup the output figure
 if nargin < 12 || isempty(bfigure)
   bfigure = false;
+else
   h = figure;
   semilogy(0,NaN);
 end
@@ -119,7 +120,7 @@ while it < maxIt && gap_flow > 10^-6
     if isempty(TF)
         TF = TF_new;
     else
-%         alpha=1/it; %MSA
+        alpha=1/it; %MSA
         for n = 1:totNodes
             for t = 1:totT
                 for d= 1:totDest
@@ -158,6 +159,7 @@ while it < maxIt && gap_flow > 10^-6
         b=semilogy(time,gap_s,'ob');
         c=semilogy(time,gap_flow,'xg');
         legend([a,b,c],'gap based on simulation interval','adjusted gap based on simulation interval','total flow difference');
+        drawnow;
     end
     flows_up_prev = flows_up;
 end
