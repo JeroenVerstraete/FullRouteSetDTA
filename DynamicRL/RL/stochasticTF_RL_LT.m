@@ -25,9 +25,9 @@ act_t = false(1,totT+1);
 gVeh = floor(rc_dt/dt);
 
 %betas
-betaUturn=0;
+betaUturn=-100;
 betaTT=-1;
-betaHierarchy=0;
+betaHierarchy=-5;
 
 switch rc_agg
     case 'first'
@@ -141,6 +141,7 @@ for d_index=1:totDest
         gap = inf;
         gap_s = inf;
     end  
+    
 end
 % fprintf('\n');
 
@@ -171,18 +172,20 @@ end
             util_map(:,t)=util_map(:,t+1);
             old_util_map=ones(totLinks,1)*Inf;
             while(max(abs((util_map(:,t)-old_util_map))./util_map(:,t))>0.01)
+                
+                 combined_util=zeros(totLinks,1);
+%                 max(abs((util_map(:,t)-old_util_map))./util_map(:,t)),t
                 old_util_map=util_map(:,t);                
                 for l_in=1:totLinks
                     if any(endN(l_in)==destinations)
                         if endN(l_in)~=d
-                            util_map(l_in,t)=-inf;
+                            combined_util(l_in)=-inf;
                         else
-                            util_map(l_in,t)=0;
+                            combined_util(l_in)=0;
                         end
                         continue;
                     end
                     outgoingLinks = find(strN==endN(l_in));
-                    combined_util=0;
                     for l_out=outgoingLinks'
                         if isinf(util_map(l_out,end))
                             continue;
@@ -208,10 +211,11 @@ end
                         % penalties
                         val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
 
-                        combined_util=combined_util+exp(mu*val);
+                        combined_util(l_in)=combined_util(l_in)+exp(mu*val);
                     end
-                    util_map(l_in,t) = 1/mu*log(combined_util);
+                    combined_util(l_in) = 1/mu*log(combined_util(l_in));
                 end
+                util_map(:,t)=combined_util;
             end
             
         end
