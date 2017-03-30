@@ -4,7 +4,7 @@ clear
 clc
 close all
 
-load dym_largeTime2.mat
+load dym_largeTime.mat
 min_theta=1/min(links.length./links.freeSpeed);
 plotNetwork(nodes,links,true,[]);
 
@@ -15,8 +15,8 @@ totT = round(2/dt);
 
 rc_dt = dt;
 max_it = 100;
-alpha = 1;
-theta = 1;
+alpha = 0.5;
+theta = 100;
 
 tic
 [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta,false,true);

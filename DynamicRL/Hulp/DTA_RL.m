@@ -143,6 +143,8 @@ while it < maxIt && gap_flow > 10^-6
     [simTT] = cvn2tt(sum(cvn_up,3),sum(cvn_down,3),dt,totT,links);
     %update flows
     [flows_up] = cvn2flows(sum(cvn_up,3),dt);
+    
+%     [flows] = cvn2flowsreal(cvn_up,cvn_down);
 
     
     %Compute new turning fractions via all-or-nothing assignment

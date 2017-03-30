@@ -1,4 +1,4 @@
-function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_LT(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy)
+function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_LT_aparteconnectors(nodes,links,origins,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy)
 %shortest path utility map
 
 
@@ -151,25 +151,53 @@ end
         util_map = zeros(totLinks,totT+1);
         %first do the last time slice
         
+        numD = size(destinations,2);
+        numO = size(origins,2);
+        numL = size(links,1);
+        
+        LL = zeros(numL,numL);
+        DL = zeros(numD,numL);
+        OL = zeros(numO,numL);
+        for l_ol=1:numO
+             OL(l_ol,origins(l_ol)==links.fromNode)=1; % eerste numO links zijn de Origins, 
+             %moet kost van de link zelf worden (en zal dus iedere iteratie aangepast worden!)
+        end
+
+        LD = zeros(numL,numD);
+        for l_ld=1:numD
+            LD(destinations(l_ld)==links.toNode,l_ld)=1; % eerste numD links zijn de Destinations
+        end
+        DD = zeros(numD,numD);
+        OD = zeros(numO,numD); %heeft geen betekenis op het netwerk
+
+        LO = zeros(numL,numO);
+        DO = zeros(numD,numO);
+        OO = zeros(numO,numO);
+
+        M=[LL LO LD; OL OO OD ; DL DO DD];
+        M=sparse(M);
+
+        connectionMatrix=repmat(endN,1,totLinks)==repmat(strN',totLinks,1);
+        connectionMatrix=[connectionMatrix;OL];
         
         %here static part of Recursive Logit
 
         %compute the deterministic part
-        TT=(repmat(endN,1,totLinks)==repmat(strN',totLinks,1)).*repmat(simTT(:,end)',totLinks,1);
-        v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy;
+        TT=(connectionMatrix).*repmat(simTT(:,end)',totLinks+numO,1);
+        v = betaTT*TT+betaUturn*[UTurn;zeros(numO,numL)]+betaHierarchy*[Hierarchy;zeros(numO,numL)];
 %          vmin=min(min(v(v>-1)));
 %          v=(v-ones(size(v))*(vmin+1)).*(v<0);
         %compute M (connectivity & travel time)
-        M= exp(mu*v).*(TT>0);
+        M(1:numL+numO,1:numL) = exp(mu*v).*(TT>0);
         %compute b (destinations)
-        b=zeros(totLinks,1);
-        b(endN==d)=1;
+        b=zeros(totLinks+numO+numD,1);
+        b(totLinks+numO+d_index)=1;
         %compute z (exponent of value function)
         z = (eye(length(b)) -M)\b;
         %compute utility map
         util_map(:,totT+1)=1/mu*log(z);
         
-        rcond(eye(length(b)) -M)
+%         cond(eye(length(b)) -M)
         
         %next do the others in upwind order
         for t=totT:-1:1
