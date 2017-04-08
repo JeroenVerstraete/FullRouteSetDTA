@@ -28,6 +28,8 @@ v = beta_tt*TT+beta_Ut*UTurn+beta_hierarchy*levelsDown;
 LOL = exp(1/mu*v).*(TT>0);
 M(1:numL+numO,1:numL)=LOL;
 
+rcond(eye(length(b)) -M)
+
 %% bepalen Z (1 matrix for all destinations)
 z = (eye(length(b)) -M)\b;
 

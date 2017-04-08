@@ -113,7 +113,9 @@ TF_new = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTu
 %MAIN LOOP: iterate until convergence is reached or maximum number of
 %iterations is reached
 while it < maxIt && gap_flow > 10^-6
+    display('New iteration')
     it = it+1;
+    it
     gap_TF = 0;
     
     %calculate the update step
@@ -130,15 +132,16 @@ while it < maxIt && gap_flow > 10^-6
             end
         end
     end
-    sp=[TF{6,:,1}];
-    figure;plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
-    grid on;
-    legend('fraction using the main road', 'fraction using the alternative');    
-    drawnow;
+%     sp=[TF{6,:,1}];
+%     figure;plot(dt*[0:totT-1],sp(1:2:end),'r',dt*[0:totT-1],sp(2:2:end),'b');
+%     grid on;
+%     legend('fraction using the main road', 'fraction using the alternative');    
+%     drawnow;
     
     %calculate new flows
+    disp('start ltm');
     [cvn_up,cvn_down] = LTM_MC(nodes,links,origins,destinations,ODmatrix,dt,totT,TF);
-    
+    disp('end ltm');
     %update costs
     [simTT] = cvn2tt(sum(cvn_up,3),sum(cvn_down,3),dt,totT,links);
     %update flows

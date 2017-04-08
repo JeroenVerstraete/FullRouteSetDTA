@@ -166,10 +166,14 @@ end
         b(endN==d)=1;
         %compute z (exponent of value function)
         z = (eye(length(b)) -M)\b;
+        
+        if(max(max(z))>1)
+            error('utiliteiten groter dan 0')
+        end
         %compute utility map
         util_map(:,totT+1)=1/mu*log(z);
         
-        rcond(eye(length(b)) -M)
+%         rcond(eye(length(b)) -M)
         
         %next do the others in upwind order
         for t=totT:-1:1

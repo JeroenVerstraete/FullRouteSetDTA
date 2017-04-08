@@ -61,6 +61,8 @@ tVeh = floor(timeVeh/dt);
 fracVeh = timeVeh/dt-tVeh;
 
 for d_index=1:totDest
+    disp('destination');
+    disp(d_index);
     %use the arrival map order to compute the maximum perceived utility
     util_map = max_perc_util_d(d_index);
     
@@ -76,7 +78,7 @@ for d_index=1:totDest
                 TF{n,t,d_index}=ones(max(1,length(incomingLinks)),max(1,length(outgoingLinks)));
             end            
         else
-            for t=1:totT                
+            for t=1:totT   
                 %update all turning fractions
                 %interval by same value
                 if timeSteps(t)>=timeRC(min(length(timeRC),next_rc))
@@ -146,6 +148,7 @@ end
 
 %Nested function used for finding the maximum perceived utility
     function [util_map] = max_perc_util_d(d_index)
+        disp('<begin mpu');
         d=destinations(d_index);
         util_map = zeros(totLinks,totT+1);
         %first do the last time slice
@@ -162,11 +165,21 @@ end
         b(endN==d)=1;
         %compute z (exponent of value function)
         z = (eye(length(b)) -M)\b;
+        
+        disp('<z found');
         %compute utility map
         util_map(:,totT+1)=1/mu*log(z);
         
+        if(max(max(z))>1)
+            error('utiliteiten groter dan 0')
+        end
+        
         %next do the others in upwind order
         for t=totT:-1:1
+            if(mod(t,500)==0)
+                disp('<<mpu');
+                disp(t);
+            end
             for l_in=1:totLinks
                 if any(endN(l_in)==destinations)
                     if endN(l_in)~=d
@@ -210,6 +223,7 @@ end
                 util_map(l_in,t) = 1/mu*log(util_map(l_in,t));
             end
         end
+        disp('<end mpu');
     end
 
 %Nested function used for finding the destination based arrival map
