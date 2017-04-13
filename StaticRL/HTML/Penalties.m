@@ -61,11 +61,12 @@ plotLoadedLinksDifference(nodes,links,flowsVerschil,true,[],3/max(flowsVerschil)
 % If we adjust the network a little bit as follows:
 load network2.mat
 plotNetwork(nodes,links,true,[]);
+[odmatrix,origins,destinations]=ODmatrix(odmatrix);
 % Notice that loops are possible now!
 
 %%
 % If we than calculate the flows with Recursive Logit we get:
-flowsrl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
+flowsrl = rlEq(odmatrix,origins,destinations,links,mu,alpha,beta,[],[],[-1.5,0,0],true);
 plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
 
 % Witch seems to be very strange. We see that route with Uturns is used, and
@@ -73,7 +74,7 @@ plotLoadedLinks(nodes,links,sum(flowsrl,2),true,[],[],[],'Flows RL');
 % In some ocasion, uturns and loops may be realistic (like parking search
 % behaviour), but not in this numbers. Therefor we add a penalty for making
 % Uturns. If we take the beta now equal to -100, we get:
-flows2rl = rlEq(odmatrix,links,mu,alpha,beta,[],[],[-1.5,-100,0],true);
+flows2rl = rlEq(odmatrix,origins,destinations,links,mu,alpha,beta,[],[],[-1.5,-100,0],true);
 plotLoadedLinks(nodes,links,sum(flows2rl,2),true,[],[],[],'Flows RL');
 %%
 % If we plot the difference with the penalty of uturns against the network

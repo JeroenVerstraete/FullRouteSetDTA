@@ -50,4 +50,5 @@ for des=1:numD
     F = (eye(length(G))-P.')\G;
     destinationFlows(:,des)=F;
 end
+save p.mat P
 destinationFlows=destinationFlows(1:numL,:); %only interested in Links to somewhere
