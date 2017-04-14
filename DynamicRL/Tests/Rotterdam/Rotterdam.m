@@ -22,13 +22,16 @@ nodes.yco = [data.node.y]';
 ODmatrices = data.ODmatrices;
 timeSeries = data.timeslices;
 
-links.freeSpeed=links.length./max(0.01,links.length./links.freeSpeed);
+links.length=links.length *10;
+links.freeSpeed=links.length./max(0.05,links.length./links.freeSpeed);
+
 
 plotNetwork(nodes,links,true,[]);
 
-dt = 0.0005; 
+dt = 0.05; 
 totT = round(2/dt);
 [ODmatrix,origins,destinations] = buildODmatrix(ODmatrices,timeSeries,dt,totT);
+
 
 rc_dt = dt;
 max_it = 100;
@@ -40,6 +43,11 @@ tic
 toc
 
 
-[simFlows] = cvn2flows(cvn_up,dt);
+[simFlows] = cvn2flows(sum(cvn_up,3),dt);
 fRate = Inf; %set frame rate
 animateSimulation(nodes,links,simFlows(:,1:end),dt*[1:totT],fRate);
+
+
+sp=[TF{164,:,23}];
+figure;plot(dt*[0:totT-1],sp(1:16:end),'r',dt*[0:totT-1],sp(5:16:end),'b',dt*[0:totT-1],sp(9:16:end),'black',dt*[0:totT-1],sp(13:16:end),'r');
+grid on;

@@ -111,7 +111,7 @@ for d_index=1:totDest
                                 val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
                                 
                                 if(1+round(time/dt)-t)<1
-                                    disp('<<<To large timestep>>>');
+%                                     disp('<<<To large timestep>>>');
                                 end
                             end
                             
@@ -208,7 +208,7 @@ end
                         %als lager dan 1, dan zou het moeten interpoleren
                         %met waarde uit zelfde tijdslaag
                         if (1+round(time/dt)-t)<1
-                            disp('<<<To large timestep MPU>>>');
+%                             disp('<<<To large timestep MPU>>>');
                         end
                     end
                     

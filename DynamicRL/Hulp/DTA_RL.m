@@ -161,11 +161,11 @@ while it < maxIt && gap_flow > 10^-6
         gap
         gap_flow
         hold on
-        time=cputime-start_time;
-        a=semilogy(time,gap,'r.');
-        b=semilogy(time,gap_s,'ob');
-        c=semilogy(time,gap_flow,'xg');
-        legend([a,b,c],'gap based on simulation interval','adjusted gap based on simulation interval','total flow difference');
+%         time=cputime-start_time;
+%         a=semilogy(time,gap,'r.');
+%         b=semilogy(time,gap_s,'ob');
+        semilogy(it+1,gap_flow,'xg');
+%         legend([a,b,c],'gap based on simulation interval','adjusted gap based on simulation interval','total flow difference');
         drawnow;
     end
     flows_up_prev = flows_up;
