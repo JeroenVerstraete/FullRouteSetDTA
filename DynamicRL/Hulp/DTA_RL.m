@@ -91,10 +91,12 @@ Hierarchy=sparse(Hierarchy);
 %Left,Right
 [Left,Right]=turningAngle(nodes,links);
 
+NodeDelay=zeros(totLinks,totLinks,totT);
+
 [flows_up_prev] = cvn2flows(sum(cvn_up,3),dt);
 
 %initialize the turning fractions (both first and last give the same result)
-TF_new = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy,flows_up_prev,Left,Right);
+TF_new = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy,flows_up_prev,Left,Right,NodeDelay);
 
 
 %MAIN LOOP: iterate until convergence is reached or maximum number of
@@ -139,7 +141,7 @@ while it < maxIt && gap_flow > 10^-6
     
     %Compute new turning fractions via all-or-nothing assignment
     %and compute convergence gap
-    [TF_new,gap,gap_s] = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy,flows_up,Left,Right);
+    [TF_new,gap,gap_s] = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy,flows_up,Left,Right,NodeDelay);
     
     gap_flow = sum(sum(abs(flows_up-flows_up_prev)));
     %plot convergence in function of computation time
@@ -156,6 +158,7 @@ while it < maxIt && gap_flow > 10^-6
         drawnow;
     end
     flows_up_prev = flows_up;
+    NodeDelay=nodeDelays(flows_up,nodes,links);
 end
 
 %Check for number of iterations until convergence

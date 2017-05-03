@@ -1,4 +1,4 @@
-function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_Delay(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy,flows,Left,Right)
+function [TF,gap_dt,gap_dt_s] = stochasticTF_RL_Delay(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy,Left,Right,NodeDelay)
 totDest = length(destinations);
 totNodes = length(nodes.id);
 totLinks = length(links.id);
@@ -27,6 +27,7 @@ betaTT=-1;
 betaHierarchy=0;
 betaLeft=-5;
 betaRight=-2;
+betaNodeDelay=-3;
 
 switch rc_agg
     case 'first'
@@ -118,7 +119,7 @@ for d_index=1:totDest
                             val = val + betaTT * simTT(l_out,min(totT+1,t+tVeh));
                             
                             % penalties
-                            val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out)+betaLeft*Left(l_in,l_out)+betaRight*Right(l_in,l_out);
+                            val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out)+betaLeft*Left(l_in,l_out)+betaRight*Right(l_in,l_out)+betaNodeDelay*NodeDelay(l_in,l_out,min(totT,t+tVeh));
                             
                             P(l,i)=exp(mu*val); %not normalized
                         end
@@ -157,7 +158,7 @@ end
         %compute the deterministic part
         TT=ConnectionMatrix.*repmat(simTT(:,end)',totLinks,1);
         
-        v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy+betaLeft*Left+betaRight*Right;
+        v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy+betaLeft*Left+betaRight*Right++betaNodeDelay*NodeDelay(totT);
         %compute M (connectivity & travel time)
         M = exp(mu*v).*(TT>0);
         %compute b (destinations)
@@ -216,7 +217,7 @@ end
                     val = val + betaTT * simTT(l_out,t);
                     
                     % penalties
-                    val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
+                    val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out)+betaLeft*Left(l_in,l_out)+betaRight*Right(l_in,l_out)+betaNodeDelay*NodeDelay(l_in,l_out,t);
                                         
                     util_map(l_in,t)=util_map(l_in,t)+exp(mu*val);
                 end
