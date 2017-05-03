@@ -1,40 +1,20 @@
-function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,maxIt,alpha,theta,bfigure,large)
-
-%Method of successive averages for calculating deterministic user
-%equilibrium
-%
-%SYNTAX
-%   [flows] = MSA_exercise(odmatrix,nodes,links)
-%
-%DESCRIPTION
-%   returns the flow on each link in the deterministic user equilibrium as
-%   calculated by the method of successive averages
-%
-%INPUTS
-%   odmatrix: static origin/destination matrix
-%   nodes: table with all the nodes in the network.
-%   links: table with all the links in the network
-    
-% This file is part of the matlab package for dynamic traffic assignments 
-% developed by the KULeuven. 
-%
-% Copyright (C) 2016  Himpe Willem, Leuven, Belgium
-%
-% This program is free software: you can redistribute it and/or modify
-% it under the terms of the GNU General Public License as published by
-% the Free Software Foundation, either version 3 of the License, or
-% any later version.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-% GNU General Public License for more details.
-% 
-% You should have received a copy of the GNU General Public License
-% along with this program.  If not, see <http://www.gnu.org/licenses/>.
-%
-% More information at: http://www.mech.kuleuven.be/en/cib/traffic/downloads
-% or contact: willem.himpe {@} kuleuven.be
+function [cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,maxIt,alpha,theta,bfigure,algorithm)
+%nodes
+%links
+%origins - node numbers
+%desitations - node numbers
+%ODmatrix
+%dt
+%totT
+%rc_dt
+%maxIt
+%alpha - stepsize
+%theta - variance parameter
+%bfigure - boolean if figure needed
+%algorithm - int value of wich algorithm
+%               0: normal
+%               1: large time steps
+%               2: node delays
 
 
 %setup the output figure
@@ -44,14 +24,19 @@ elseif (bfigure)
   h = figure;
   semilogy(0,NaN);
 end
-if nargin <13 || isempty(large) || not(large)
+
+if nargin <13
     rl=@stochasticTF_RL;
 else
-    rl=@stochasticTF_RL_LT;    
+    switch algorithm
+        case 0
+            rl=@stochasticTF_RL;
+        case 1
+            rl=@stochasticTF_RL_LT;
+        case 2
+            rl=@stochasticTF_RL_Delay;
+    end
 end
-
-
-start_time = cputime;
 
 %Maximum number of iterations
 if isempty(maxIt)
@@ -82,20 +67,20 @@ gap_TF = inf;
 gap_flow = inf;
 TF = [];
 
+%Uturns
 UTurn=zeros(totLinks,totLinks);
 connectionMatrix =zeros(totLinks,totLinks);
 for l=1:totLinks
     connectionMatrix(l,[links.fromNode]==links.toNode(l))=1; %check if connection is possible
     UTurn(l,[links.fromNode]==links.toNode(l)&[links.toNode]==links.fromNode(l))=1; %check if u-turn
 end
-
 UTurn=sparse(UTurn);
 
+%Hierarchy
 if isempty((find(strcmp(links.Properties.VariableNames, 'level'))))
     %level1 is laagste level. snelweg heeft de hoogste level
     links=hierarchy(links);
 end 
-
 Hierarchy = zeros(totLinks,totLinks);
 [linksFrom,linksTo]=find(connectionMatrix);
 goingDown=links.level(linksFrom)>links.level(linksTo);
@@ -103,11 +88,13 @@ Hierarchy(linksFrom(goingDown)+totLinks*(linksTo(goingDown)-1))=1;
 Hierarchy=sparse(Hierarchy);
 %Hierachy only for going down!
 
-%initialize the turning fractions (both first and last give the same result)
-TF_new = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
+%Left,Right
+[Left,Right]=turningAngle(nodes,links);
 
 [flows_up_prev] = cvn2flows(sum(cvn_up,3),dt);
 
+%initialize the turning fractions (both first and last give the same result)
+TF_new = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy,flows_up_prev,Left,Right);
 
 
 %MAIN LOOP: iterate until convergence is reached or maximum number of
@@ -152,7 +139,7 @@ while it < maxIt && gap_flow > 10^-6
     
     %Compute new turning fractions via all-or-nothing assignment
     %and compute convergence gap
-    [TF_new,gap,gap_s] = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy);
+    [TF_new,gap,gap_s] = rl(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,theta,UTurn,Hierarchy,flows_up,Left,Right);
     
     gap_flow = sum(sum(abs(flows_up-flows_up_prev)));
     %plot convergence in function of computation time
