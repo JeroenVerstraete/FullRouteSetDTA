@@ -25,9 +25,9 @@ act_t = false(1,totT+1);
 betaUturn=0;
 betaTT=-1;
 betaHierarchy=0;
-betaLeft=-5;
-betaRight=-2;
-betaNodeDelay=-3;
+betaLeft=-1;
+betaRight=-1;
+betaNodeDelay=-1;
 
 switch rc_agg
     case 'first'
@@ -158,7 +158,7 @@ end
         %compute the deterministic part
         TT=ConnectionMatrix.*repmat(simTT(:,end)',totLinks,1);
         
-        v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy+betaLeft*Left+betaRight*Right++betaNodeDelay*NodeDelay(totT);
+        v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy+betaLeft*Left+betaRight*Right++betaNodeDelay*NodeDelay(:,:,totT);
         %compute M (connectivity & travel time)
         M = exp(mu*v).*(TT>0);
         %compute b (destinations)
