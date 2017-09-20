@@ -35,6 +35,8 @@
 % addpath('../MatlabTrafficToolbox/Dynamic Traffic Assignment','../MatlabTrafficToolbox/Visualization Tools','../MatlabTrafficToolbox/Network Data')
 % javaclasspath('../MatlabTrafficToolbox/Dynamic Traffic Assignment');
 
+% run from ThesisJeroen directory
+
 javaclasspath('/MatlabTrafficToolbox/Dynamic Traffic Assignment')
 addpath(genpath(pwd))
 %clear the work space

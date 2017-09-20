@@ -1,0 +1,3 @@
+[submodule "MatlabTrafficToolbox"]
+	path = MatlabTrafficToolbox
+	url = https://github.com/HimpeWillem/MatlabTrafficToolbox
