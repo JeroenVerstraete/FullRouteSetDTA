@@ -22,7 +22,7 @@ plotNetwork(nodes,links,true,[]);
 %
 
 %setup the time interval and total number of time steps
-dt = 0.02; 
+dt = 0.01; 
 totT = round(2/dt);
 
 %build the full ODmatrix
@@ -38,10 +38,14 @@ max_it = 100;
 alpha = 0.5;
 %scaling of the utility (logit)
 theta = 0.010;
+%beta parameters of penalties, Traveltime always beta=-1
+betas=containers.Map();
+%Define as betas('Uturn')=-2;
+%Uturn, Hierarchy
  
 %run DTA with deterministic route choice and MSA averaging
 tic
-[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta);
+[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta,betas);
 toc
 
 

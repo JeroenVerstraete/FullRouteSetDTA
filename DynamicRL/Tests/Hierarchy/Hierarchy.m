@@ -17,7 +17,7 @@ plotNetwork(nodes,links,true,[]);
 %% Setup the simulation
 
 %setup the time interval and total number of time steps
-dt = 0.01; 
+dt = 0.001; 
 totT = round(2/dt);
 
 %build the full ODmatrix
@@ -28,22 +28,27 @@ totT = round(2/dt);
 %time interval for the route choice
 rc_dt = dt;
 %maximum number of iterations
-max_it = 200;
+max_it = 1000;
 %scaling of the updates over iterations (<1)
-alpha = 0.1;
+alpha = 0.5;
 %scaling of the utility (logit)
-theta = 0.010;
+theta = 100;
+%beta parameters of penalties, Traveltime always beta=-1
+betas=containers.Map();
+%Define as betas('Uturn')=-2;
+%Uturn, Hierarchy
+% betas('Hierarchy')=-1;
  
 %run DTA with deterministic route choice and MSA averaging
 tic
-[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta);
+[cvn_up,cvn_down,TF] = DTA_RL(nodes,links,origins,destinations,ODmatrix,dt,totT,rc_dt,max_it,alpha,theta,betas);
 toc
 
 %% Transform CVN values to travel times
-The upstream and dowsntream CVN functions of the link transmission model
-are transformed into travel times for every link in the network. The
-travel times are compared for the main route (from split to merge) and
-the alternative route.
+% The upstream and dowsntream CVN functions of the link transmission model
+% are transformed into travel times for every link in the network. The
+% travel times are compared for the main route (from split to merge) and
+% the alternative route.
 
 
 %calculate the simulated travel times

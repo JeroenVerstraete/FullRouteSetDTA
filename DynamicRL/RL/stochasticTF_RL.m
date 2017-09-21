@@ -1,5 +1,4 @@
-function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,UTurn,Hierarchy)
-%shortest path utility map
+function [TF,gap_dt,gap_dt_s] = stochasticTF_RL(nodes,links,destinations,simTT,cvn_up,dt,totT,rc_dt,rc_agg,mu,betas,structures,display)
 
 totDest = length(destinations);
 totNodes = length(nodes.id);
@@ -23,10 +22,6 @@ gap_dt_s = 0;
 act_t = false(1,totT+1);
 gVeh = floor(rc_dt/dt);
 
-%betas
-betaUturn=0;
-betaTT=-1;
-betaHierarchy=0;
 
 switch rc_agg
     case 'first'
@@ -61,8 +56,10 @@ tVeh = floor(timeVeh/dt);
 fracVeh = timeVeh/dt-tVeh;
 
 for d_index=1:totDest
-    disp('destination');
-    disp(d_index);
+    if(display)
+        disp('destination');
+        disp(d_index);
+    end
     %use the arrival map order to compute the maximum perceived utility
     util_map = max_perc_util_d(d_index);
     
@@ -111,15 +108,12 @@ for d_index=1:totDest
                                 val = util_map(l_out,t1)+max(0,(1+time/dt-t1))*(util_map(l_out,t2)-util_map(l_out,t1));
                                 
                                 if(1+round(time/dt)-t)<1
-%                                     disp('<<<To large timestep>>>');
+                                    disp('<<<To large timestep>>>');
                                 end
                             end
                             
-                            %TT
-                            val = val + betaTT * simTT(l_out,min(totT+1,t+tVeh));
-                            
-                            % penalties
-                            val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
+                            %utility                  
+                            val = val + utilityfunction(simTT(l_out,t),l_in,l_out,t);
                             
                             P(l,i)=exp(mu*val); %not normalized
                         end
@@ -148,7 +142,9 @@ end
 
 %Nested function used for finding the maximum perceived utility
     function [util_map] = max_perc_util_d(d_index)
-        disp('<begin mpu');
+        if(display)
+            disp('<begin mpu');
+        end
         d=destinations(d_index);
         util_map = zeros(totLinks,totT+1);
         %first do the last time slice
@@ -157,7 +153,7 @@ end
 
         %compute the deterministic part
         TT=(repmat(endN,1,totLinks)==repmat(strN',totLinks,1)).*repmat(simTT(:,end)',totLinks,1);
-        v = betaTT*TT+betaUturn*UTurn+betaHierarchy*Hierarchy;
+        v = utilityfunction(TT);
         %compute M (connectivity & travel time)
         M = exp(mu*v).*(TT>0);
         %compute b (destinations)
@@ -165,8 +161,9 @@ end
         b(endN==d)=1;
         %compute z (exponent of value function)
         z = (eye(length(b)) -M)\b;
-        
-        disp('<z found');
+        if(display)
+            disp('<z found');
+        end
         %compute utility map
         util_map(:,totT+1)=1/mu*log(z);
         
@@ -176,9 +173,11 @@ end
         
         %next do the others in upwind order
         for t=totT:-1:1
-            if(mod(t,500)==0)
-                disp('<<mpu');
-                disp(t);
+            if(display)
+                if(mod(t,500)==0)
+                    disp('<<mpu');
+                    disp(t);
+                end
             end
             for l_in=1:totLinks
                 if any(endN(l_in)==destinations)
@@ -208,22 +207,38 @@ end
                         %als lager dan 1, dan zou het moeten interpoleren
                         %met waarde uit zelfde tijdslaag
                         if (1+round(time/dt)-t)<1
-%                             disp('<<<To large timestep MPU>>>');
+                            disp('<<<To large timestep MPU>>>');
                         end
                     end
                     
-                    %TT                   
-                    val = val + betaTT * simTT(l_out,t);
-                    
-                    % penalties
-                    val= val + betaUturn*UTurn(l_in,l_out)+betaHierarchy*Hierarchy(l_in,l_out);
+                    %utility                  
+                    val = val + utilityfunction(simTT(l_out,t),l_in,l_out,t);
                                         
                     util_map(l_in,t)=util_map(l_in,t)+exp(mu*val);
                 end
                 util_map(l_in,t) = 1/mu*log(util_map(l_in,t));
             end
         end
-        disp('<end mpu');
+        if(display)
+            disp('<end mpu');
+        end
+    end
+
+    function utility=utilityfunction(TT,l_in,l_out,t)
+        utility=-TT;
+        for key=keys(betas)
+            beta=betas(char(key));
+            structure=structures(char(key));
+            if not(isscalar(TT))
+                utility=utility+beta*structure;
+            else
+                if ndims(structure)==3
+                    utility=utility+beta*structure(l_in,l_out,t);
+                else
+                    utility=utility+beta*structure(l_in,l_out);
+                end
+            end
+        end
     end
 
 %Nested function used for finding the destination based arrival map
