@@ -5,19 +5,15 @@ close all
 
 %% First add the folders
 % Matlab directory is 'ThesisJeroen'
-javaclasspath('/ThesisJeroen/Main Library/Static Assignment')
+javaclasspath('/StaticRL/Main Library/Static Assignment')
 addpath(genpath(pwd))
 
 %% Loading a simple network
-networks={'highway.mat';'toy_cascetta.mat';'gent.mat';'leuven.mat';'network1.mat'};
-load(networks{4})
-
-load dym_largetime;
-odmatrix=cell2mat(ODmatrices(1,1));
+load('network1.mat');
 
 [odmatrix,origins,destinations]=ODmatrix(odmatrix);
 %plot the network
-% plotNetwork(nodes,links,true,[]);
+plotNetwork(nodes,links,true,[]);
 % plotLoadedLinks(nodes,links,links.length,true,[],[],[]);
 % plotLoadedLinks(nodes,links,links.capacity,true,[],[],[],'links.capacity');
 
